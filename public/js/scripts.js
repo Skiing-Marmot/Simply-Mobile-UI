@@ -22,30 +22,46 @@ $(function() {
 			return win;
 		},
 		opacity : 0.75, // opacity of the helper
-		snap : "#phone-screen", // Stop the draggable on the limites of the #phone-screen div
-		snapMode : "inner", // Stop the draggable only against the inner limites of #phone-screen
+		snap : "#phone-screen", // Stop the draggable on the limites of the
+								// #phone-screen div
+		snapMode : "inner", // Stop the draggable only against the inner limites
+							// of #phone-screen
 		revert : "invalid" // Come back to initial place if not dropped
 	});
 	// Make other View types icons draggable
 	$(".inline-component, .view-component").draggable({
-		cancel : null, // All elements are allowed to be dragged (else input elements can't by default)
+		cancel : null, // All elements are allowed to be dragged (else input
+						// elements can't by default)
 		helper : "clone", // What is shown with the pointer when moved
 		opacity : 0.75, // opacity of the helper
-		snap : "#phone-screen, .view-comp, .window-comp", // Stop the draggable against the inner limites of #phone-screen, windows and views
+		snap : "#phone-screen, .view-comp, .window-comp", // Stop the
+															// draggable against
+															// the inner limites
+															// of #phone-screen,
+															// windows and views
 		snapMode : "inner",
 		revert : "invalid" // Come back to initial place if not dropped
 	});
 
 	// Make the phone screen droppable
 	$("#phone-screen").droppable({
-		accept : ".window-component, .tabsgroup-component", // Only Windows and Tabs groups can be added as root elements
-		activeClass : "ui-active", // class to apply when an acceptable draggable starts to be dragged
-		greedy : true, // Prevent event propagation when draggable is dropped on a child
+		accept : ".window-component, .tabsgroup-component", // Only Windows and
+															// Tabs groups can
+															// be added as root
+															// elements
+		activeClass : "ui-active", // class to apply when an acceptable
+									// draggable starts to be dragged
+		greedy : true, // Prevent event propagation when draggable is dropped
+						// on a child
 		drop : function(event, ui) {// What to do when a draggable is dropped
-			// Create the Bacbone model for the Window TODO handle tabs group creation
-			var mod = new ComponentModel({ type : ComponentTypes.WINDOW });
+			// Create the Bacbone model for the Window TODO handle tabs group
+			// creation
+			var mod = new ComponentModel({
+				type : ComponentTypes.WINDOW
+			});
 			mod.set_cid();
-			// Set the attribute _cid to the auto-generated value of the model cid (needed to identify it later)
+			// Set the attribute _cid to the auto-generated value of the model
+			// cid (needed to identify it later)
 			componentsCollection.add(mod);
 			// Add the model to the components collection
 
@@ -57,7 +73,8 @@ $(function() {
 			// Bind the click event on that view to the selectComponent() method
 			win.click(selectComponent);
 			win.width("100%").height("100%");
-			// Configure that view to be droppable and accept other view components
+			// Configure that view to be droppable and accept other view
+			// components
 			makeViewDroppable(_win);
 			// Select the new created view
 			win.click();
@@ -69,7 +86,10 @@ $(function() {
 var makeViewDroppable = function(_view) {
 	var view = $(_view.el);
 	view.droppable({
-		accept : ".inline-component, .view-component", // It accepts only other Views and simple components (no Window or Tabs group)
+		accept : ".inline-component, .view-component", // It accepts only other
+														// Views and simple
+														// components (no Window
+														// or Tabs group)
 		activeClass : "ui-active",
 		greedy : true,
 		drop : function(event, ui) {
@@ -77,18 +97,21 @@ var makeViewDroppable = function(_view) {
 			var layout = $(this).attr("layout");
 
 			// Create a new Backbone model for the dragged element
-			var mod = new ComponentModel({ type : Number(comp.attr("compType")) });
+			var mod = new ComponentModel({
+				type : Number(comp.attr("compType"))
+			});
 			mod.set_cid();
 			// Add the model as a child of this droppable model
 			_view.model.children.add(mod);
-			// Add it also to the global components Collection so it is easily accessible
+			// Add it also to the global components Collection so it is easily
+			// accessible
 			componentsCollection.add(mod);
 
 			// Get and render the Backbone view for that model
 			var _droppedView = getView(mod, "display");
 			var droppedView = $(_droppedView.render().el);
 
-			//droppedView.appendTo(this);
+			// droppedView.appendTo(this);
 			if (layout == "vertical") {
 				droppedView.appendTo(this);
 			} else if (layout == "horizontal") {
@@ -97,44 +120,49 @@ var makeViewDroppable = function(_view) {
 			} else {
 				// TODO (composite)
 			}
-			//droppedView.width("100%").height("100%");
+			// droppedView.width("100%").height("100%");
 
-			// Make the view selectionable and droppable (if it is not a simple view) and select it
+			// Make the view selectionable and droppable (if it is not a simple
+			// view) and select it
 			droppedView.click(selectComponent);
-			if(comp.hasClass("view-component")) makeViewDroppable(_droppedView);
+			if (comp.hasClass("view-component"))
+				makeViewDroppable(_droppedView);
 			droppedView.click();
 
-			/* if (comp.hasClass("inline-component")) {
-			 comp.removeClass("inline-component").addClass("inline-comp ui-selectee").width("80%").css("margin", "5px auto");
-			 }
-			 if (comp.hasClass("view-component")) {
-			 var top = (comp.prev().position()) ? (comp.prev().position().top + comp.prev().outerHeight(true)) : 0;
-			 comp.removeClass("view-component").addClass("view-comp ui-selectee").css({
-			 "position" : "absolute",
-			 "bottom" : 0,
-			 "top" : top,
-			 "height" : "auto"
-			 }).width("100%").attr("layout", "vertical");
-			 makeViewDroppable(comp);
-			 }*/
+			/*
+			 * if (comp.hasClass("inline-component")) {
+			 * comp.removeClass("inline-component").addClass("inline-comp
+			 * ui-selectee").width("80%").css("margin", "5px auto"); } if
+			 * (comp.hasClass("view-component")) { var top =
+			 * (comp.prev().position()) ? (comp.prev().position().top +
+			 * comp.prev().outerHeight(true)) : 0;
+			 * comp.removeClass("view-component").addClass("view-comp
+			 * ui-selectee").css({ "position" : "absolute", "bottom" : 0, "top" :
+			 * top, "height" : "auto" }).width("100%").attr("layout",
+			 * "vertical"); makeViewDroppable(comp); }
+			 */
 		}
 	});
 };
 
-// Click handler for the views: select or or unselect a view and show or hide its configuration view
+// Click handler for the views: select or or unselect a view and show or hide
+// its configuration view
 var selectComponent = function(event) {
 	$(this).toggleClass("selected");
-	// If there already was a selected element, unselect it and remove its configuration view
+	// If there already was a selected element, unselect it and remove its
+	// configuration view
 	if (selected != null) {
 		selected.removeClass("selected");
 		configView.close();
 		$('#config').empty();
 	}
-	// If the clicked element is now selected, set the selected variable to it and show its configuration view
+	// If the clicked element is now selected, set the selected variable to it
+	// and show its configuration view
 	if ($(this).hasClass("selected")) {
 		selected = $(this);
 		var cid = $(this).attr("cid");
-		// Use the unique cid to get the Backbone model corresponding to the selected element
+		// Use the unique cid to get the Backbone model corresponding to the
+		// selected element
 		var mod = componentsCollection.getByCid(cid);
 		// Get and render the Backbone view to configure that model
 		configView = getView(mod, "config");
@@ -142,23 +170,268 @@ var selectComponent = function(event) {
 		// Append it to the #config div
 		$("#config").append(configWin);
 
-		// Just display the JSON representation of the model in the #model div when it changes
+		// Just display the JSON representation of the model in the #model div
+		// when it changes
 		mod.bind('change', function() {
 			$('#model').html(JSON.stringify(mod.toJSON()));
 		});
 	} else {
-		// If we only have unselected an element, set the selected variable to null
+		// If we only have unselected an element, set the selected variable to
+		// null
 		selected = null;
 	}
-	// We only select the clicked element and don't propagate the event to its parent node
+	// We only select the clicked element and don't propagate the event to its
+	// parent node
 	event.stopPropagation();
 };
 
-// TODO Get the JSON representation of the mobile app and send it to the server to obtain the generated Titanium JavaScript files
+// TODO Get the JSON representation of the mobile app and send it to the server
+// to obtain the generated Titanium JavaScript files
 var makeApp = function() {
-	//var xml = document.getElementById("phone-screen");
-	//var json = $.xml2json(xml);
+	// var xml = document.getElementById("phone-screen");
+	// var json = $.xml2json(xml);
 	console.log(JSON.stringify(componentsCollection));
-	//$.get("/appSrcZip");
-	window.location.href = '/appSrcZip';
+	// $.get("/appSrcZip");
+	// window.location.href = '/appSrcZip';
+
+	var appDesc = {
+		"applicationNameIcon" : "RSS Reader",
+		"applicationName" : "RSSReader",
+		"target" : [ "iphone", "android", "ipad" ],
+		"manifest" : null,
+		"allowVertical" : true,
+		"allowHorizontal" : true,
+		"baseFile" : "RSSReader"
+	};
+
+	var appConf = {
+		"moduleName" : "RSSReader",
+		"views" : [ {
+			"name" : "HomeWindow",
+			"constructorType" : "Window",
+			"rightNavButton" : {
+				"name" : "ParamsButton",
+				"constructorType" : "Button",
+				"params" : {
+					"title" : {
+						"type" : "directValue",
+						"valueType" : "String",
+						"value" : "Params"
+					}
+				},
+				"children" : [],
+				"eventListener" : [ {
+					"event" : "click",
+					"action" : {
+						"actionType" : "openWindow",
+						"actionValue" : "ParamsWindow"
+					}
+				} ]
+			},
+			"params" : {
+				"title" : {
+					"type" : "directValue",
+					"valueType" : "String",
+					"value" : "Home"
+				},
+				"layout" : {
+					"type" : "directValue",
+					"valueType" : "String",
+					"value" : "vertical"
+				}
+			},
+			"children" : [
+
+			]
+		}, {
+			"name" : "ParamsWindow",
+			"constructorType" : "Window",
+			"params" : {
+				"title" : {
+					"type" : "directValue",
+					"valueType" : "String",
+					"value" : "Feed sources"
+				},
+				"layout" : {
+					"type" : "directValue",
+					"valueType" : "String",
+					"value" : "vertical"
+				}
+			},
+			"children" : [ {
+				"name" : "NewSourceView",
+				"constructorType" : "View",
+				"params" : {
+					"height" : {
+						"type" : "directValue",
+						"valueType" : "String",
+						"value" : "100%"
+					},
+					"layout" : {
+						"type" : "directValue",
+						"valueType" : "String",
+						"value" : "vertical"
+					}
+				},
+				"children" : [ {
+					"name" : "NewFeedNameView",
+					"constructorType" : "View",
+					"params" : {
+						"layout" : {
+							"type" : "directValue",
+							"valueType" : "String",
+							"value" : "horizontal"
+						},
+						"height" : {
+							"type" : "directValue",
+							"valueType" : "Direct",
+							"value" : "Titanium.UI.SIZE"
+						}
+					},
+					"children" : [ {
+						"name" : "NewFeedNameLabel",
+						"constructorType" : "Label",
+						"params" : {
+							"text" : {
+								"type" : "directValue",
+								"valueType" : "String",
+								"value" : "Name: "
+							}
+						},
+						"children" : []
+					}, {
+						"name" : "NewFeedNameTextField",
+						"constructorType" : "TextField",
+						"params" : {
+							"hintText" : {
+								"type" : "directValue",
+								"valueType" : "String",
+								"value" : "Name"
+							}
+						}
+					} ]
+				}, {
+					"name" : "NewFeedHostView",
+					"constructorType" : "View",
+					"params" : {
+						"layout" : {
+							"type" : "directValue",
+							"valueType" : "String",
+							"value" : "horizontal"
+						},
+						"height" : {
+							"type" : "directValue",
+							"valueType" : "Direct",
+							"value" : "Titanium.UI.SIZE"
+						}
+					},
+					"children" : [ {
+						"name" : "NewFeedHostLabel",
+						"constructorType" : "Label",
+						"params" : {
+							"text" : {
+								"type" : "directValue",
+								"valueType" : "String",
+								"value" : "Host: "
+							}
+						},
+						"children" : []
+					}, {
+						"name" : "NewFeedHostTextField",
+						"constructorType" : "TextField",
+						"params" : {
+							"hintText" : {
+								"type" : "directValue",
+								"valueType" : "String",
+								"value" : "Host"
+							}
+						}
+					} ]
+				}, {
+					"name" : "NewFeedPathView",
+					"constructorType" : "View",
+					"params" : {
+						"layout" : {
+							"type" : "directValue",
+							"valueType" : "String",
+							"value" : "horizontal"
+						},
+						"height" : {
+							"type" : "directValue",
+							"valueType" : "Direct",
+							"value" : "Titanium.UI.SIZE"
+						}
+					},
+					"children" : [ {
+						"name" : "NewFeedPathLabel",
+						"constructorType" : "Label",
+						"params" : {
+							"text" : {
+								"type" : "directValue",
+								"valueType" : "String",
+								"value" : "Path: "
+							}
+						},
+						"children" : []
+					}, {
+						"name" : "NewFeedPathTextField",
+						"constructorType" : "TextField",
+						"params" : {
+							"hintText" : {
+								"type" : "directValue",
+								"valueType" : "String",
+								"value" : "Path"
+							}
+						},
+						"children" : [],
+						"newModel" : [ {
+							"modelAttribute" : "path",
+							"objectAttribute" : "value"
+						} ]
+					} ]
+				}, {
+					"name" : "AddButton",
+					"constructorType" : "Button",
+					"params" : {
+						"title" : {
+							"type" : "directValue",
+							"valueType" : "String",
+							"value" : "Add source"
+						}
+					}
+				} ]
+			} ]
+		}, {
+			"name" : "FeedWindow",
+			"constructorType" : "Window",
+			"params" : {
+				"title" : {
+					"type" : "directValue",
+					"valueType" : "String",
+					"value" : "Feed details"
+				},
+				"layout" : {
+					"type" : "directValue",
+					"valueType" : "String",
+					"value" : "vertical"
+				}
+			},
+			"children" : [ {
+				"name" : "FeedLinkLabel",
+				"constructorType" : "Label",
+				"params" : {
+					"text" : {
+						"type" : "directValue",
+						"valueType" : "String",
+						"value" : "Show in browser"
+					}
+				}
+			} ]
+		} ]
+	};
+
+	document.forms["makeAppForm"]["appDesc"].value = JSON.stringify(appDesc);
+	//document.forms["makeAppForm"]["appConfig"].value = JSON.stringify(componentsCollection.at(0));
+	document.forms["makeAppForm"]["appConfig"].value = JSON.stringify(appConf);
+	return true;
 };

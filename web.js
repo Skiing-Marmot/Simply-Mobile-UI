@@ -14,14 +14,18 @@ app.use(express.logger());
 
 app.use(express.static(__dirname + '/public'));
 
-app.get('/appSrcZip', function(request, response) {
+app.post('/appSrcZip', function(request, response) {
 	
 	// TODO appFile and confFile -> get JSON from client
+	var appFile = request.param("appDesc");
+	var confFile = request.param("appConf");
+	
+	console.log("appFile: " + appFile);
 	
     //Read / parse all conf files
-    var appFile = fs.readFileSync('apps/RSSReader/app.json');
+  //  var appFile = fs.readFileSync('apps/RSSReader/app.json');
     var jsonAppParse = JSON.parse(appFile);
-    var confFile = fs.readFileSync('apps/RSSReader/conf.json');
+  //  var confFile = fs.readFileSync('apps/RSSReader/conf.json');
     var jsonConfParse = JSON.parse(confFile);
 
     // Read all template files
@@ -89,6 +93,7 @@ app.get('/appSrcZip', function(request, response) {
     //images folder
     downloadZip.add("Resources/images/spinner.png", new Buffer(spinnerImage));
 
+    response.setHeader('Content-Type', 'application/zip');
     response.send(downloadZip.toBuffer());
 });
 
