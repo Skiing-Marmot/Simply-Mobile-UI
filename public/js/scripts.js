@@ -196,17 +196,17 @@ var makeApp = function() {
 	// window.location.href = '/appSrcZip';
 
 	var appDesc = {
-		applicationNameIcon : "RSS Reader",
-		applicationName : "RSSReader",
+		applicationNameIcon : "My App",
+		applicationName : "MyApp",
 		target : [ "iphone", "android", "ipad" ],
 		manifest : null,
 		allowVertical : true,
 		allowHorizontal : true,
-		baseFile : "RSSReader"
+		baseFile : "ModuleTest"
 	};
 
 	var appConf = {
-		moduleName : "RSSReader",
+		moduleName : "ModuleTest",
 		views : [ componentsCollection.at(0) ]
 	};
 

@@ -188,9 +188,9 @@ function getAttributesToBindForConfig(view) {
 		case ComponentTypes.VIEW:
 			return ["layout", "backgroundColor", "width", "height"];
 		case ComponentTypes.TEXTFIELD:
-			return ["backgroundColor", "width", "height", "hintText", "color", "font"];
+			return ["backgroundColor", "width", "height", "hintText", "color"/*, "font"*/];
 		case ComponentTypes.LABEL:
-			return ["backgroundColor", "width", "height", "text", "color", "font"];
+			return ["backgroundColor", "width", "height", "text", "color"/*, "font"*/];
 		default:
 			console.log("No data for that model type.");
 			break;

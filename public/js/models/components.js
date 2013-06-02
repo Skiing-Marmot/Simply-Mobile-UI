@@ -82,7 +82,7 @@ function getInitialization(type) {
 		};
 	case ComponentTypes.TEXTFIELD:
 		return {
-			constructorType : "Textfield",
+			constructorType : "TextField",
 			params : {
 				hintText : {
 					type : "directValue",
@@ -149,12 +149,12 @@ function getInitialization(type) {
 					type : "directValue",
 					valueType : "String",
 					value : "auto"
-				},
+				}/*,
 				font : {
 					type: "directValue",
 					valueType: "Direct",
 					value: '{font: "Verdana", fontSize: "1em"}'
-				}
+				}*/
 			}
 		};
 	}
