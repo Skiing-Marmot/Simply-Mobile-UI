@@ -129,7 +129,7 @@ function AttributesConfiguration(view) {
 			bindings: {
 				selector : view.el,
 				converter : function(direction, value) {
-					if(direction == ModelToView) {
+					if(direction == 'ModelToView') {
 						$(view.el).css("font-size", value.fontSize);
 						$(view.el).css("font-family", value.font);
 						return JSON.stringify(value);
