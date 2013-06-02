@@ -431,7 +431,8 @@ var makeApp = function() {
 	};
 
 	document.forms["makeAppForm"]["appDesc"].value = JSON.stringify(appDesc);
+	console.log(JSON.stringify(appDesc));
 	//document.forms["makeAppForm"]["appConfig"].value = JSON.stringify(componentsCollection.at(0));
-	document.forms["makeAppForm"]["appConfig"].value = JSON.stringify(appConf);
+	document.forms["makeAppForm"]["appConf"].value = JSON.stringify(appConf);
 	return true;
 };

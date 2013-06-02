@@ -7,12 +7,13 @@ var ejs = require('ejs');
 
 var app = express();
 app.use(express.logger());
+app.use(express.bodyParser());
+app.use(express.static(__dirname + '/public'));
 
 /*app.get('/', function(request, response) {
   response.send('Hello World!');
 });*/
 
-app.use(express.static(__dirname + '/public'));
 
 app.post('/appSrcZip', function(request, response) {
 	
