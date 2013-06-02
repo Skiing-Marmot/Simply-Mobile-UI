@@ -130,7 +130,7 @@ function AttributesConfiguration(view) {
 				selector : view.el,
 				converter : function(direction, value) {
 					if(direction == 'ModelToView') {
-						value = JSON.parse(value);
+						value = JSON.parse(JSON.stringify(value));
 						$(view.el).css("font-size", value.fontSize);
 						$(view.el).css("font-family", value.font);
 						//return JSON.stringify(value);
