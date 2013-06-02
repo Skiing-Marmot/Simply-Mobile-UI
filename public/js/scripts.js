@@ -172,9 +172,9 @@ var selectComponent = function(event) {
 
 		// Just display the JSON representation of the model in the #model div
 		// when it changes
-		mod.bind('change', function() {
+	/*	mod.bind('change', function() {
 			$('#model').html(JSON.stringify(mod.toJSON()));
-		});
+		});*/
 	} else {
 		// If we only have unselected an element, set the selected variable to
 		// null

@@ -129,7 +129,7 @@ function AttributesConfiguration(view) {
 				selector : view.el,
 				elAttribute : 'navBarHidden'
 			}
-	}
+	};
 }
 
 function getAttributesToBindForDisplay(view) {
@@ -156,7 +156,7 @@ function getBindingForDisplay(view) {
 	var bindings = {_cid: ac["_cid"].bindings};
 
 	_.each(attributesToBind, function(value, key, list) {
-		bindings["params." + key + ".value"] = ac[key].bindings;
+		bindings["'params." + key + ".value'"] = ac[key].bindings;
 	});
 
 	return bindings;
@@ -184,7 +184,7 @@ function getBindingsForConfig(view) {
 	var attributesToBind = getAttributesToBindForConfig(view);
 
 	_.each(attributesToBind, function(element, index, list) {
-		bindings["params." + element + ".value"] = '[name="' + element + '"]';
+		bindings["'params." + element + ".value'"] = '[name="' + element + '"]';
 	});
 
 	return bindings;
@@ -199,7 +199,7 @@ function getHtmlForConfig(view) {
 		html += getHtmlForElement(ac[element], element);
 	});
 
-	html += '</div>'
+	html += '</div>';
 	return html;
 }
 

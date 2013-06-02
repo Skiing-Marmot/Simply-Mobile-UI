@@ -9,7 +9,7 @@ ComponentTypes = {
 	LABEL : 3
 };
 
-ComponentModel = Backbone.Model.extend({
+ComponentModel = Backbone.DeepModel.extend({
 	initialize : function() {
 		_.bindAll(this);
 		console.log("type: " + this.get("type"));
