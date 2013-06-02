@@ -13,7 +13,11 @@ function AttributesConfiguration(view) {
 
 	this.title = {
 		inputType : "textfield",
-		inputPlaceHolder : "Window title"
+		inputPlaceHolder : "Window title",
+		bindings : {
+			selector : view.el,
+			elAttribute : 'title'
+		}
 	};
 
 	this.backgroundColor = {
@@ -118,6 +122,14 @@ function AttributesConfiguration(view) {
 			}
 		}
 	};
+	
+	this.navBarHidden = {
+			inputType : "checkbox",
+			bindings : {
+				selector : view.el,
+				elAttribute : 'navBarHidden'
+			}
+	}
 }
 
 function getAttributesToBindForDisplay(view) {
