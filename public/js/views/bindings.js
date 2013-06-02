@@ -123,6 +123,18 @@ function AttributesConfiguration(view) {
 		}
 	};
 	
+	this.font = {
+			inputType: "textfield",
+			inputPlaceHolder: "Font",
+			bindings: {
+				selector : view.el,
+				converter : function(direction, value) {
+					$(view.el).css("font-size", value.fontSize);
+					$(view.el).css("font-family", value.font);
+				}
+			}
+	}
+	
 	this.navBarHidden = {
 			inputType : "checkbox",
 			bindings : {
@@ -170,9 +182,9 @@ function getAttributesToBindForConfig(view) {
 		case ComponentTypes.VIEW:
 			return ["layout", "backgroundColor", "width", "height"];
 		case ComponentTypes.TEXTFIELD:
-			return ["backgroundColor", "width", "height", "hintText", "color", "font.font", "font.fontSize"];
+			return ["backgroundColor", "width", "height", "hintText", "color", "font"];
 		case ComponentTypes.LABEL:
-			return ["backgroundColor", "width", "height", "text", "color", "font.font", "font.fontSize"];
+			return ["backgroundColor", "width", "height", "text", "color", "font"];
 		default:
 			console.log("No data for that model type.");
 			break;

@@ -139,6 +139,11 @@ function getInitialization(type) {
 					type : "directValue",
 					valueType : "String",
 					value : "auto"
+				},
+				font : {
+					type: "directValue",
+					valueType: "Direct",
+					value: {font: "Verdana", fontSize: "1em"}
 				}
 			}
 		};
