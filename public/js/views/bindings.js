@@ -138,12 +138,13 @@ function getAttributesToBindForDisplay(view) {
 }
 
 function getBindingForDisplay(view) {
-	var bindings = {};
-	var attributesToBind = getAttributesToBindForDisplay(view);
+	//var attributesToBind = getAttributesToBindForDisplay(view);
+	var attributesToBind = view.model.get("params");
 	var ac = new AttributesConfiguration(view);
+	var bindings = {_cid: ac["_cid"].bindings};
 
-	_.each(attributesToBind, function(element, index, list) {
-		bindings[element] = ac[element].bindings;
+	_.each(attributesToBind, function(value, key, list) {
+		bindings["params." + key + ".value"] = ac[key].bindings;
 	});
 
 	return bindings;
@@ -171,7 +172,7 @@ function getBindingsForConfig(view) {
 	var attributesToBind = getAttributesToBindForConfig(view);
 
 	_.each(attributesToBind, function(element, index, list) {
-		bindings[element] = '[name="' + element + '"]';
+		bindings["params." + element + ".value"] = '[name="' + element + '"]';
 	});
 
 	return bindings;

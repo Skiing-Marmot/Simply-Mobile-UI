@@ -27,7 +27,7 @@ DisplayView = Backbone.View.extend({
 	
 	render : function() {
 		
-		if(this.model.get("type") == 2) {
+		if(this.model.get("type") == ComponentTypes.TEXTFIELD) {
 			this.$el.attr("type", "text");
 			this.$el.attr("readonly", true);
 		}
