@@ -190,7 +190,7 @@ var selectComponent = function(event) {
 var makeApp = function() {
 	// var xml = document.getElementById("phone-screen");
 	// var json = $.xml2json(xml);
-	console.log(JSON.stringify(componentsCollection));
+	console.log(JSON.stringify(componentsCollection.at(0)));
 	// $.get("/appSrcZip");
 	// window.location.href = '/appSrcZip';
 
@@ -431,7 +431,7 @@ var makeApp = function() {
 	};
 
 	document.forms["makeAppForm"]["appDesc"].value = JSON.stringify(appDesc);
-	console.log(JSON.stringify(appDesc));
+	//console.log(JSON.stringify(appDesc));
 	//document.forms["makeAppForm"]["appConfig"].value = JSON.stringify(componentsCollection.at(0));
 	document.forms["makeAppForm"]["appConf"].value = JSON.stringify(appConf);
 	return true;

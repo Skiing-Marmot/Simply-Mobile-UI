@@ -15,7 +15,7 @@ app.use(express.static(__dirname + '/public'));
 });*/
 
 
-app.post('/appSrcZip', function(request, response) {
+app.post('/appSrcZip.zip', function(request, response) {
 	
 	// TODO appFile and confFile -> get JSON from client
 	var appFile = request.param("appDesc");
