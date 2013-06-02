@@ -1,0 +1,258 @@
+/*
+Simply Mobile - Mobile Development Framework
+Copyright (c) 2012 Model N, Jérôme Ueberschlag, Clémence Aucagne, Jean-Baptiste Pringuey
+
+See the file license.txt for copying permission.
+*/
+
+
+<% var addEvent = true; %>
+
+//open a new window
+<% if (action.actionType == "openWindow") { %>
+	var fireEvent = function (e) {
+		Ti.API.info('event info ' + JSON.stringify(e));
+		SMapp.os({
+			def : function() {
+				SMapp.navgroup.open(new <%- moduleName %><%- action.actionValue %>({model : <%- baseView %>.model, collection : <%- baseView %>.collection}).render().<%- action.actionValue %>, {
+					animated : true
+				});
+			},
+			android : function() {
+				new <%- moduleName %><%- action.actionValue %>({model : <%- baseView %>.model, collection : <%- baseView %>.collection}).render().<%- action.actionValue %>.open({model : true});
+			}
+		});
+
+	};
+
+//fire an event on Ti.App
+<% } else if (action.actionType == "fireEvent") { %>
+	var fireEvent = function () {
+	    Ti.API.info('fireEvent color');
+		Ti.App.fireEvent('<%- action.actionValue %>', <%- action.actionData %>);
+	};
+
+//new model
+<% } else if (action.actionType == "newModel") { %>
+	var fireEvent = function () {
+		//create the new object
+		var modelToAdd = {};
+		<% if (action.fromScratch && action.fromScratch == false) { %>
+			if (<%- baseView %>.model) {
+				modelToAdd = <%- baseView %>.model.attributes;
+				if (<%- baseView %>.model.collection) {
+					delete modelToAdd[<%- baseView %>.model.collection.idAttribute];
+				}
+				else if (<%- baseView %>.collection) {
+					delete modelToAdd[<%- baseView %>.collection.idAttribute];
+				}
+			}
+		<% } %>
+		for (var modelToAddIndex in <%- baseView %>.newModel) {
+			modelToAdd[<%- baseView %>.newModel[modelToAddIndex].modelAttribute] = <%- baseView %>[<%- baseView %>.newModel[modelToAddIndex].objectName][<%- baseView %>.newModel[modelToAddIndex].objectAttribute];
+		}
+		//TODO : fixed attribute
+		
+		//add poster
+		<% if (action.addPoster && action.addPoster == true) { %>
+			modelToAdd.poster = SMapp.user.login;
+		<% } %>
+		//add a date to each new model
+		modelToAdd.date = new Date().getTime();
+
+		//if a nested collection is specified
+		<% if (action.nestCollection) { %>
+			//add new object to the nested collection
+			if (<%- baseView %>.model.<%- action.nestCollection %>Coll) {
+				<%- baseView %>.model.<%- action.nestCollection %>Coll.add(modelToAdd);
+				<%- baseView %>.model.collection.onUpdate({model : <%- baseView %>.model});
+			}
+		<% } else { %>
+			//add the new object to the collection
+			if (<%- baseView %>.collection) {
+				<%- baseView %>.collection.onNew({model : modelToAdd});
+			}
+			else if (<%- baseView %>.model.collection) {
+				<%- baseView %>.model.collection.onNew({model : modelToAdd});
+			}
+		<% } %>
+	}
+
+//update model
+<% } else if (action.actionType == "updateModel") { %>
+	var fireEvent = function () {
+		if (<%- baseView %>.collection) {
+			<%- baseView %>.collection.onUpdate({model : <%- baseView %>.model});
+		}
+		else if (<%- baseView %>.model.collection) {
+			<%- baseView %>.model.collection.onUpdate({model : <%- baseView %>.model});
+		}
+	}
+
+//delete model
+<% } else if (action.actionType == "deleteModel") { %>
+	var fireEvent = function () {
+		if (<%- baseView %>.collection) {
+			<%- baseView %>.collection.onDelete({model : <%- baseView %>.model});
+		}
+		else if (<%- baseView %>.model.collection) {
+			<%- baseView %>.model.collection.onDelete({model : <%- baseView %>.model});
+		}
+	}
+
+//refresh all collections
+<% } else if (action.actionType == "refreshAll") { %>
+	var fireEvent = function () {
+		Ti.App.fireEvent('refreshAll');
+	}
+
+//refresh the current view collection
+<% } else if (action.actionType == "refreshCurrent") { %>
+	var fireEvent = function () {
+		if (SMapp.spinnerWindow) {
+			SMapp.spinnerWindow.show();
+		}
+		if (<%- baseView %>.collection) {
+			<%- baseView %>.collection.fetch({update : true, removeMissing : true, success : function(coll) {   
+				if (SMapp.spinnerWindow) {
+					SMapp.spinnerWindow.hide();
+			}});
+		}
+		else if (<%- baseView %>.model.collection) {
+			<%- baseView %>.model.collection.fetch({update : true, removeMissing : true, success : function(coll) {   
+				if (SMapp.spinnerWindow) {
+					SMapp.spinnerWindow.hide();
+			}});
+		}
+	}
+
+//add an event listener on Ti.App
+<% } else if (action.actionType == "eventListener") { %>
+	<% addEvent = false; %>
+	var execute = function (e) {
+	    Ti.API.info('eventListener color');
+    	<% var tempModelRegExp = new RegExp("thisModel", "g"); %>
+    	<% var tempRegExp = new RegExp("thisEl", "g");
+    	var tempRegExp2 = new RegExp("ev", "g"); %>
+		<%- action.executeValue.replace(tempRegExp, parentName).replace(tempModelRegExp, baseView + ".model").replace(tempRegExp2,"e") %>
+		<% tempRegExp2 = null;
+		tempRegExp = null; %>
+	};
+
+	var removeEvent = function () {
+		Ti.App.removeEventListener("<%- action.actionValue %>", execute);
+		<%- baseView %>.removeEventListener("close", removeEvent);
+	};
+
+	<%- parentName %>.addEventListener("close", removeEvent);
+
+	Ti.App.addEventListener("<%- action.actionValue %>", execute);
+
+//execute some code
+<% } else if (action.actionType == "execute") { %>
+	var fireEvent = function (e) {
+    	<% var tempRegExp = new RegExp("thisEl", "g"); %>
+    	<% var tempModelRegExp = new RegExp("thisModel", "g"); %>
+    	<% var tempCollRegExp = new RegExp("thisCollection", "g"); %>
+    	<% var tempCollModelsRegExp = new RegExp("thisCollectionModels", "g"); %>
+		<%- action.executeValue.replace(tempRegExp, parentName).replace(tempModelRegExp, baseView + ".model").replace(tempCollRegExp, baseView + ".collection").replace(tempCollModelsRegExp, baseView + ".collection.models") %>
+	};
+
+//sendEmail
+<% } else if (action.actionType == "sendEmail") { %>
+	var fireEvent = function () {
+		//TODO : possibility to get the "subject" or "to" field from the model or a UI component
+    	<% var tempRegExp = new RegExp("thisEl", "g"); %>
+		var emailDialog = Titanium.UI.createEmailDialog({
+			toRecipients : [<%- action.actionTo.replace(tempRegExp, parentName) %>],
+			subject : <%- action.actionSubject.replace(tempRegExp, parentName) %>
+		});
+    	<% tempRegExp = null; %>
+		emailDialog.open();
+	};
+
+//call phone number
+<% } else if (action.actionType == "callPhone") { %>
+    <% var tempRegExp = new RegExp("thisEl", "g"); %>
+	var fireEvent = function () {
+		var phone = <%- action.phoneNumber.replace(tempRegExp, parentName) %>;
+		phone = phone.replace(/\(/g, '');
+		phone = phone.replace(/\)/g, '');
+		phone = phone.replace(/-/g, '');
+		phone = phone.replace(/ /g, '');
+		Ti.API.info('Phone: ' + phone);
+		Ti.Platform.openURL('tel:' + phone);
+	};
+
+//send data to the server
+<% } else if (action.actionType == "sendData") { %>
+	var fireEvent = function (e) {
+		//build request
+		var request = {};
+		<% if (action.serverUrl && action.serverUrl == true) { %>
+			request.url = SMapp.serverUrl;
+		<% } else if (action.serverUrl) { %>
+			request.url = <%- action.serverUrl  %>;
+		<% } %>
+		request.action = "<%- action.actionUrl %>";
+		request.data = (
+		//add Event to request if execute value
+		<% action.actionData.sendData = {"type": "directValue",
+										"valueType": "Int", 
+										"value": "true"}; %>
+		<% if (action.successAttribute) { %>
+			<% if (!action.successEvent) {
+				action.actionData.event = {"type": "directValue",
+										"valueType": "String", 
+										"value": parentName + "SendDataResponse"}; 
+			} else { 
+				action.actionData.event = {"type": "directValue",
+										"valueType": "String", 
+										"value": action.successEvent};
+			 } %>
+		<% } %>
+		//build data content with paramTemplate
+		<% var template = fs.readFileSync('Resources/template/paramsTemplate.ejs', 'utf8');
+		var paramsResult = ejs.render(template, {className : undefined, classId : undefined, baseView : baseView, params : action.actionData, moduleName : moduleName, parentName : parentName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+		<%- paramsResult %>
+
+		//send Data
+		Ti.App.fireEvent('send_data', request);
+
+	};
+
+	//create eventListener if execute value
+	<% if (action.successAttribute) { %>
+		var execute = function (e) {
+    		Ti.API.info('fireEvent executeValue : ' + JSON.stringify(e));
+    		<% var tempRegExp = new RegExp("thisEl", "g"); %>
+			if (e.data.<%- action.successAttribute %>) {
+				<%- action.onSuccess.replace(tempRegExp, parentName) %>
+			}
+			else {
+				<%- action.onFailure.replace(tempRegExp, parentName) %>
+			}
+		};
+
+		var removeEvent = function () {
+			Ti.App.removeEventListener("<%- moduleName %><%- parentName%>SendDataResponse", execute);
+			Ti.App.removeEventListener("<%- moduleName %><%- action.successEvent%>", execute);
+			<%- baseView %>.removeEventListener("close", removeEvent);
+		};
+
+		<%- parentName %>.addEventListener("close", removeEvent);
+
+		<% if (action.successEvent) { %>
+			Ti.App.addEventListener("<%- moduleName %><%- action.successEvent%>", execute);
+		<% } else { %>
+			Ti.App.addEventListener("<%- moduleName %><%- parentName%>SendDataResponse", execute);
+		<% } %>
+
+	<% } %>
+
+<% } %>
+
+
+<% if (addEvent) { %>
+	<%- parentName %>.addEventListener("<%- event %>", fireEvent);
+<% } %>

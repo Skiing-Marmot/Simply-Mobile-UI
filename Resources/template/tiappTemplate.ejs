@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ti:app xmlns:ti="http://ti.appcelerator.org">
+    <property name="acs-oauth-secret-production" type="string">DtHAxyIxKplTqxo6JEp0WivvqCLz6ojG</property>
+    <property name="acs-oauth-key-production" type="string">R5Of0Lm7sETWzbNcXPiYsNn4WT1OcURV</property>
+    <property name="acs-api-key-production" type="string">JA5Y0WUYMd0fxYsxfVVKuJPoaq8SKDPA</property>
+    <property name="acs-oauth-secret-development" type="string">jj9N7KdEI1CYqsIqnhI1IRoZbirViM9J</property>
+    <property name="acs-oauth-key-development" type="string">N7WZyomBaEw29RIsfQJLZag0sxPRgBkn</property>
+    <property name="acs-api-key-development" type="string">cKXfBkwmnDsCNzD3PiD9vxpKQ5b7A70x</property>
+    <property name="ti.android.threadstacksize" type="int">327680</property>
+
+    <deployment-targets>
+    <% for (var targetIndex in app.target)  { %>
+        <target device="<%- app.target[targetIndex] %>">true</target>
+    <% } %>
+
+    </deployment-targets>
+    <sdk-version>2.1.1.GA</sdk-version>
+    <id>com.<%- app.applicationName %></id>
+    <name><%- app.applicationNameIcon %></name>
+    <version><%- app.version %></version>
+    <publisher><%- app.publisher %></publisher>
+    <url><%- app.website %></url>
+    <description><%- app.description %></description>
+    <copyright><%- app.copyright %></copyright>
+    <% if (app.icon) { %>
+        <icon><%- app.icon %></icon>
+    <% } else { %>
+        <icon>appicon.png</icon>
+    <% } %>
+    <persistent-wifi>false</persistent-wifi>
+    <prerendered-icon>false</prerendered-icon>
+    <statusbar-style>default</statusbar-style>
+    <statusbar-hidden>false</statusbar-hidden>
+    <fullscreen>false</fullscreen>
+    <navbar-hidden>false</navbar-hidden>
+    <analytics>true</analytics>
+    <guid>2e8e003a-c854-4228-b76b-494c3e1535e0</guid>
+    <property name="ti.ui.defaultunit">system</property>
+    <iphone>
+        <orientations device="iphone">
+            <orientation>Ti.UI.PORTRAIT</orientation>
+            <orientation>Ti.UI.UPSIDE_PORTRAIT</orientation>
+            <orientation>Ti.UI.LANDSCAPE_LEFT</orientation>
+            <orientation>Ti.UI.LANDSCAPE_RIGHT</orientation>
+        </orientations>
+        <orientations device="ipad">
+            <orientation>Ti.UI.PORTRAIT</orientation>
+            <orientation>Ti.UI.UPSIDE_PORTRAIT</orientation>
+            <orientation>Ti.UI.LANDSCAPE_LEFT</orientation>
+            <orientation>Ti.UI.LANDSCAPE_RIGHT</orientation>
+        </orientations>
+    </iphone>
+    <android xmlns:android="http://schemas.android.com/apk/res/android">
+        <property name="ti.deploytype">production</property>
+        <property name="ti.android.compilejs" type="bool">true</property>
+        <manifest>
+            <activity android:configChanges="orientation|keyboardHidden"
+                android:debuggable="true" android:name="AndroidActivity" android:screenOrientation="portrait"/>
+            <supports-screens android:anyDensity="false"/>
+        </manifest>
+    </android>
+    <mobileweb>
+        <precache/>
+        <splash>
+            <enabled>true</enabled>
+            <inline-css-images>true</inline-css-images>
+        </splash>
+        <theme>default</theme>
+    </mobileweb>
+    <modules>
+    </modules>
+</ti:app>
+
+<!--
+Simply Mobile - Mobile Development Framework
+Copyright (c) 2012 Model N, Jérôme Ueberschlag, Clémence Aucagne, Jean-Baptiste Pringuey
+
+See the file license.txt for copying permission.
+-->

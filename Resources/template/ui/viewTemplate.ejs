@@ -1,0 +1,528 @@
+/*
+Simply Mobile - Mobile Development Framework
+Copyright (c) 2012 Model N, Jérôme Ueberschlag, Clémence Aucagne, Jean-Baptiste Pringuey
+
+See the file license.txt for copying permission.
+*/
+
+
+//execute function
+<% if (view.execute) { %>
+	<%- view.execute %>
+<% } %>
+
+//tabGroup Template
+<% if (view.constructorType && view.constructorType == 'TabGroup') { %>
+
+	<% var template = fs.readFileSync('Resources/template/ui/tabGroupTemplate.ejs', 'utf8');
+	var tabGroupResult = ejs.render(template, {view : view, moduleName : moduleName, parentCondition : view.conditionChild, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+	<%- tabGroupResult %>
+
+//window Template
+<% } else if (view.constructorType  && view.constructorType == 'Window') {
+	var template = fs.readFileSync('Resources/template/ui/windowTemplate.ejs', 'utf8');
+	if (isTabWindow && isTabWindow == true) { 
+		var windowResult = ejs.render(template, {baseView : baseView, parentName : baseView+'.tab'+tabIndex ,window : view, moduleName : moduleName, mainWindowName : mainWindowName, isTabWindow : isTabWindow, ejs : ejs, fs : fs});
+	}
+	else {
+		var windowResult = ejs.render(template, {window : view, moduleName : moduleName, mainWindowName : mainWindowName, isTabWindow : isTabWindow, ejs : ejs, fs : fs});
+	} %>
+	<%- windowResult %>
+
+//tab Template
+<% } else if (view.constructorType && view.constructorType == 'Tab') {
+	var template = fs.readFileSync('Resources/template/ui/tabTemplate.ejs', 'utf8');
+	var tabResult;
+	if (isRequired && isRequired == true) {
+		tabResult = ejs.render(template, {tab : view, isRequired : isRequired, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs});
+	} 
+	else {
+		tabResult = ejs.render(template, {baseView : baseView, parentName : parentName, tab : view, isRequired : isRequired, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs});
+	} %>
+	<%- tabResult %>
+
+//other backbones views
+<% } else if ((isRequired && isRequired == true) || (view.constructorType && ((view.constructorType == 'TableViewItem' || view.constructorType == 'ViewItem') || ((view.constructorType == 'TableView' || view.constructorType == 'View' || view.constructorType == "ScrollView") && view.nestCollection) || (view.model)))) { %>
+	//backbone view template
+	<%- moduleName %><%- view.name %> = Backbone.View.extend({
+	    
+		//list to create the close function
+		<% var toNullList = []; %>
+		<% var toCalltoNullList = []; %>
+		<% var toFiretoNullList = []; %>
+		<% var closeBind = []; %>
+
+		//variables to pass to children
+		<% var newBaseView, newParentName; %>
+
+	    _modelBinder: undefined,
+	    newModel: [],
+
+	    initialize: function() {
+	        _.bindAll(this);
+
+	        <% if (view.model) { %>
+	        	this.model = SMapp.<%= moduleName %>.<%- view.model %>Collection.at(0);
+		        this.collection = SMapp.<%= moduleName %>.<%- view.model %>Collection;
+	        <% } else if (view.nestCollection) { %>
+		        this.collection = this.model.<%- view.nestCollection %>Coll;
+	        	this.model = this.collection.at(0);
+	        <% } %>
+	        if (this.model) {
+	        	this._modelBinder = new Backbone.ModelBinder();
+	        	//bindings
+		        this.model.bind("destroy", this.close, this);
+		        <% closeBind.push('this.model.unbind("destroy", this.close);'); %>
+		        <% if (view.constructorType == 'TableViewItem') { %>
+			        this.model.bind("change", this.update, this);
+			        <% closeBind.push('this.model.unbind("change", this.update);'); %>
+			    <% } %>
+	    	}
+
+	        //alias for this used by children
+	        var this<%- view.name %> = this;
+
+			//test condition
+			<% if (view.condition) { %>
+    			<% var tempModelRegExp = new RegExp("thisModel", "g"); %>
+				if (<%- view.condition.replace(tempModelRegExp, "this" + view.name + ".model") %>) {
+			<% } %>
+
+		        this.toBind = [];
+
+
+		        //create the params for tab
+		        <% if (! (view.params)) {
+		        	view.params = {};
+		        } %>
+
+		        //params modif
+		        <% view.params._type = {
+						type: "directValue",
+						valueType: "String", 
+						value: view.constructorType
+				}; %>
+				<% view.params.className = {
+					type: "directValue",
+					valueType: "String", 
+					value: "ListItem"+ view.name
+				}; %>
+
+				<% if (view.constructorType == 'TableViewItem' || view.constructorType == 'ViewItem') { 
+					newBaseView = "this.el";
+					newParentName = "this.el";
+				} else { 
+					newBaseView = "this" + view.name;
+					newParentName = "this" + view.name + "." + view.name; 
+				} %>
+
+				<% if (view.constructorType == 'TableViewItem') { %>
+			        <%- newParentName %> = Ti.UI.createTableViewRow(
+		        <% } else if ( view.constructorType == 'ViewItem') { %>
+			        <%- newParentName %> = Ti.UI.createView(
+		        <% } else { %>
+		        	<%- newParentName %> = Ti.UI.create<%- view.constructorType %>(
+		        <% } %>
+
+				<% toCalltoNullList.push(newParentName); %>
+
+				<% toNullList.push(newBaseView); %>
+
+				//searchable
+				<% if (view.searchable && view.searchable != true && view.searchable != false) { 
+					var searchAttribute = [];
+					for (var searchIndex in view.searchable) {
+						searchAttribute.push(view.searchable[searchIndex]);
+					} 
+
+					view.params.filter = {
+						type: "attributeValue",
+						valueType: "SearchModel", 
+						value: searchAttribute
+					};
+				} %>
+
+				<% var template = fs.readFileSync('Resources/template/paramsTemplate.ejs', 'utf8');
+				var paramsResult = ejs.render(template, {params : view.params, className : view.className, classId : view.id, moduleName : moduleName, parentName : newParentName, baseView : 'this' + view.name, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+				<%- paramsResult %>
+
+				//searchBar
+				<% if (view.searchable && view.searchable == "true") { %>
+					//create search bar
+					this.searchBar<%- view.name %> = Titanium.UI.createSearchBar({
+					    barColor:'#000', 
+					    showCancel:true,
+					    height:43,
+					    top:0,
+					    hintText : "Search"
+					});
+
+					<% toNullList.push('this.searchBar' + view.name ); %> 
+					<% toFiretoNullList.push('this.searchBar' + view.name ); %> 
+
+					var searchChange<%- view.name %> = function(e) {
+						Ti.API.info('e.value: '+ e.value);
+						e.value // search string as user types
+					};
+					this.searchBar<%- view.name %>.addEventListener('change', searchChange<%- view.name %>);
+					
+					var searchBlur<%- view.name %> = function(e) {
+						this.searchBar<%- view.name %>.blur();
+					};
+					this.searchBar<%- view.name %>.addEventListener('return', searchBlur<%- view.name %>);
+					
+					var searchCancel<%- view.name %> = function(e) {
+						this.searchBar<%- view.name %>.value = '';
+					};
+					this.searchBar<%- view.name %>.addEventListener('cancel', searchCancel<%- view.name %>);
+
+					var searchCloseHandler<%- view.name %> = function () {
+						this.searchBar<%- view.name %>.removeEventListener('change', searchChange<%- view.name %>);
+						searchChange<%- view.name %> = null;	
+						this.searchBar<%- view.name %>.removeEventListener('return', searchBlur<%- view.name %>);
+						searchBlur<%- view.name %> = null;	
+						this.searchBar<%- view.name %>.removeEventListener('cancel', searchCancel<%- view.name %>);
+						searchCancel<%- view.name %> = null;	
+						this.searchBar<%- view.name %>.removeEventListener('close', searchCloseHandler<%- view.name %>);
+						searchCloseHandler<%- view.name %> = null;	
+					};
+					this.searchBar<%- view.name %>.addEventListener('close', searchCloseHandler<%- view.name %>);
+
+					<%- newParentName %>.searchHidden = false;
+					<%- newParentName %>.search = this.searchBar<%- view.name %>;
+
+					<%- newParentName %>.filterAttribute = 'filter';
+
+				<% } %>
+
+				//collection children
+				<% if (view.item) { %>
+
+					var viewCreator = function(_model) {
+			            return new <%- moduleName %><%- view.item %>({model: _model, parent : <%- newParentName %>});
+			        };
+
+			        var viewManagerFactory = new Backbone.CollectionBinder.ViewManagerFactory(viewCreator);
+			        this<%- view.name %>.collectionBinder = new Backbone.CollectionBinder(viewManagerFactory);
+
+			        this<%- view.name %>.collectionBinder.bind(this<%- view.name %>.collection, this<%- view.name %>.<%- view.name %>);			
+
+				<% } %>
+
+				<% if (view.constructorType == 'TableViewItem' || view.constructorType == 'ViewItem') { 
+					newBaseView = "this" + view.name;
+				} %>
+
+				//ceate the children views
+				<% for (indexChild in view.children) { %>
+					<% if (typeof view.children[indexChild] == "string") { %>
+						var param = {};
+						if (this.model) {
+							param.model = this.model;
+						}
+						if (this.collection) {
+							param.collection = this.collection;
+						}
+						<% toNullList.push(this+'.'+ view.children[indexChild]); %>
+						<%- newBaseView %>.<%- view.children[indexChild] %> = new <%- moduleName %><%- view.children[indexChild] %>(param).render().<%- view.children[indexChild] %>;			
+						<% toCalltoNullList.push(newBaseView + '.' + view.children[indexChild]); %>
+						if (<%- newBaseView %>.<%- view.children[indexChild] %>) {
+							<%- newBaseView %>.<%- view.name %>.add(this<%- view.name %>.<%- view.children[indexChild] %>);	
+						}
+					<% } else { %>
+						<% toNullList.push('this.'+ view.children[indexChild].name); %>
+						<% var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+						var childResult = ejs.render(template, {isRequired : false, baseView : newBaseView, parentName : newParentName, view : view.children[indexChild], indexChild : indexChild, parentCondition : view.conditionChild, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+						<%- childResult %>
+					<% } %>
+				<% } %>
+
+				//eventListener
+				<% for (indexEvent in view.eventListener) {
+					var currentEvent = view.eventListener[indexEvent]; %>
+					<% var template = fs.readFileSync('Resources/template/eventTemplate.ejs', 'utf8');
+					var eventResult = ejs.render(template, {baseView : 'this' + view.name, event : currentEvent.event, action : currentEvent.action, parentName : newParentName, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+					<%- eventResult %>
+				<% } %>
+
+				//newModel attributes
+				<% for (var newModelIndex in view.newModel) { %>
+					this.newModel.push({objectName : "<%- view.name %>", modelAttribute : <%- view.newModel[newModelIndex].modelAttribute %>, objectAttribute : <%- view.newModel[newModelIndex].objectAttribute %>});
+				<% } %>
+		        
+		        return <%- newParentName %>;
+
+			//test condition
+			<% if (view.condition) { %>
+				} else { return this; }
+			<% } %>
+	    },
+	    
+	    render: function(eventName) {
+	    	//test condition
+			<% if (view.condition) { %>
+    			<% var tempModelRegExp = new RegExp("thisModel", "g"); %>
+				if (<%- view.condition.replace(tempModelRegExp, "this" + view.name + ".model") %>) {
+			<% } %>
+		    	if (this._modelBinder) {
+			    	var bindings = {};
+			    	for (var bindingIndex in this.toBind) {
+			    		var currentToBind = this.toBind[bindingIndex];
+						if (!bindings[currentToBind.attribute]) {
+			    			bindings[currentToBind.attribute] = [];
+			    		}
+			    		bindings[currentToBind.attribute].push(currentToBind.bind);
+			    	}
+
+			    	Ti.API.info('bindings of <%- view.name %> : ' + JSON.stringify(bindings));
+
+			    	<% if (view.constructorType == 'TableViewItem' || view.constructorType == 'ViewItem') { 
+						newParentName = "this.el";
+					} else { 
+						newParentName = "this." + view.name; 
+					} %>
+
+			        //unreference
+			        this.toBind = null;
+			        this._modelBinder.bind(this.model, <%- newParentName %>, bindings);
+			        <% if (view.constructorType == 'TableViewItem') { %>
+			        	if (this.options.parent.data) {
+			        		this.options.parent.setData(this.options.parent.data.slice(0));
+			        	}
+			        <% } %>
+			    }
+		        return this;
+
+		    //test condition
+			<% if (view.condition) { %>
+				} else {return this;}
+			<% } %>
+	    },
+
+	    destroy: function () {
+	    	//fireEvent on father
+	    	this.model.destroy();
+	    },
+	    
+	    close: function() {
+	     	//unbind modelBinder
+	    	if (this._modelBinder) {
+	    		this._modelBinder.unbind();
+	    	}   
+
+	    	if (this.collectionBinder) {
+	    		this.collectionBinder.unbind();
+	    	} 	
+
+	    	<% for (var toCallCloseIndex in toCalltoNullList) { %>
+	    		if (<%- toCalltoNullList[toCallCloseIndex] %> && <%- toCalltoNullList[toCallCloseIndex] %>.close) {
+		    		<%- toCalltoNullList[toCallCloseIndex] %>.close();
+		    	}
+	    	<% } %>
+
+	    	<% for (var toFireCloseIndex in toFiretoNullList) { %>
+	    		if (<%- toFiretoNullList[toFireCloseIndex] %> && <%- toFiretoNullList[toFireCloseIndex] %>.fireEvent) {
+		    		<%- toFiretoNullList[toFireCloseIndex] %>.fireEvent('close');
+		    	}
+	    	<% } %>
+
+	    	//element to put to null
+	        <% for (var toNullIndex in toNullList) { %>
+	        	if (<%- toNullList[toNullIndex] %> && <%- toNullList[toNullIndex] %> != null) {
+		    		SMapp.utils.destroy(<%- toNullList[toNullIndex] %>);
+		    	}
+	    	<% } %>
+	    	Ti.API.info('after destroy');
+	    	//execute unbindings
+	    	<% for (var closeIndex in closeBind) { %>
+	    		if (this.model) {
+	    			<%- closeBind[closeIndex] %>
+	    		}
+	    	<% } %>
+	    }
+
+	    //if TableViewItem then have do do a setData to refresh tableView
+	    <% if (view.constructorType == 'TableViewItem') { %>
+	    	,
+
+		    update : function () {
+	        	if (this.options.parent.data) {
+	        		this.options.parent.setData(this.options.parent.data.slice(0));
+	        	}
+		    }
+
+		<% } %>
+	});
+
+//regular titanium views
+<% } else if (view.constructorType) { %>
+
+	//test condition
+	<% if (view.condition) { %>
+		<% var tempModelRegExp = new RegExp("thisModel", "g"); %>
+		if (<%- view.condition.replace(tempModelRegExp, baseView + ".model") %>) {
+	<% } %>
+
+		<% var currentName, newBaseView; %>
+		//create the view's params
+		<% if (view.constructorType == 'TableView' || view.constructorType == 'View' || view.constructorType == 'ScrollView') {
+	         view.params._type = {
+				type: "directValue",
+				valueType: "String", 
+				value: view.constructorType
+			}; 
+		} %>
+		<% if (view.constructorType == "TableView") { %>
+			<% view.params.data = {
+				type: "directValue",
+				valueType: "Direct", 
+				value: "[]"
+			}; %>
+		<% } else if (view.constructorType == "TableViewRow" && view.searchable) {
+			//searchable trick
+			var searchAttribute = [];
+			for (var searchIndex in view.searchable) {
+				searchAttribute.push(view.searchable[searchIndex]);
+			} 
+			view.params.filter = {
+				type: "attributeValue",
+				valueType: "Search", 
+				value: searchAttribute
+			};
+			%>
+		<% } %>
+
+		<% if (view.isRequired && view.isRequired == true) { %>
+			var <%- moduleName %><%- view.name %> = Titanium.UI.create<%- view.constructorType %>(
+			<% currentName = moduleName + view.name;%>
+			<% newBaseView = moduleName + view.name;%>
+		<% } else { %>
+			<%- baseView %>.<%- view.name %> = Titanium.UI.create<%- view.constructorType %>(
+			<% currentName = baseView + '.' + view.name; %>
+			<% newBaseView = baseView;%>
+		<% } %>
+
+		<% var template = fs.readFileSync('Resources/template/paramsTemplate.ejs', 'utf8');
+		var paramsResult = ejs.render(template, {baseView : newBaseView, className : view.className, classId : view.id, params : view.params, moduleName : moduleName, parentName : currentName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+		<%- paramsResult %>
+
+		//different case to add or not to the parent
+		<% if (view.constructorType == 'TableViewRow') { %>
+			<%- parentName %>.appendRow(<%- currentName %>);
+		<% } else if (view.constructorType == 'OptionDialog') { %>
+			//do nothing
+		<% } else { %>
+			if (<%- currentName %>) {
+				<%- parentName %>.add(<%- currentName %>);
+			}
+		<% } %>
+
+		//some views type need to be shown
+		<% if (view.constructorType == 'ProgressBar') { %>
+			<%- currentName %>.show();
+		<% } %>
+
+		//searchBar
+		<% if (view.searchable && view.searchable == "true") { %>
+			//create search bar
+			var searchBar<%- view.name %> = Titanium.UI.createSearchBar({
+			    barColor:'#000', 
+			    showCancel:true,
+			    height:43,
+			    top:0,
+			    hintText : "Search"
+			});
+
+			var searchChange<%- view.name %> = function(e) {
+				Ti.API.info('e.value: '+ e.value);
+				e.value // search string as user types
+			};
+			searchBar<%- view.name %>.addEventListener('change', searchChange<%- view.name %>);
+			
+			var searchBlur<%- view.name %> = function(e) {
+				searchBar<%- view.name %>.blur();
+			};
+			searchBar<%- view.name %>.addEventListener('return', searchBlur<%- view.name %>);
+			
+			var searchCancel<%- view.name %> = function(e) {
+				searchBar<%- view.name %>.value = '';
+			};
+			searchBar<%- view.name %>.addEventListener('cancel', searchCancel<%- view.name %>);
+
+			<%- currentName %>.searchHidden = false;
+			<%- currentName %>.search = searchBar<%- view.name %>;
+
+			<%- currentName %>.filterAttribute = 'filter';
+
+		<% } %>
+
+		//collectionBinder creation if TableView or View
+		<% if (view.constructorType == "TableView" || view.constructorType == "View" || view.constructorType == "ScrollView") { %>
+			<% if (view.item) { %>
+				if (<%- newBaseView %>.collection) {
+
+					var viewCreator = function(_model) {
+			            return new <%- moduleName %><%- view.item %>({model: _model, parent : <%- newBaseView %>.<%- view.name %>});
+			        };
+
+			        var viewManagerFactory = new Backbone.CollectionBinder.ViewManagerFactory(viewCreator);
+			        <%- newBaseView %>.collectionBinder = new Backbone.CollectionBinder(viewManagerFactory);
+
+			    	<%- newBaseView %>.collectionBinder.bind(<%- newBaseView %>.collection, <%- newBaseView %>.<%- view.name %>);			
+				}
+			<% } %>
+			
+		<% } %>
+
+		//add children of this view
+		<% for (indexChild in view.children) { %>
+			//include
+			<% if (view.children[indexChild].require) { %>
+				<% var includedFile = fs.readFileSync('Resources/'+ view.children[indexChild].require);
+				var parsedIncludedFile = JSON.parse(includedFile);
+				var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+				var childResult = ejs.render(template, {isRequired : false, baseView : newBaseView, parentName : currentName, view : parsedIncludedFile, parentCondition : view.conditionChild, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+				<%- childResult %>
+			<% } else if (typeof view.children[indexChild] == "string") { %>
+				var param = {};
+				if (<%- newBaseView %>.model) {
+					param.model = <%- newBaseView %>.model;
+				}
+				if (<%- newBaseView %>.collection) {
+					param.collection = <%- newBaseView %>.collection;
+				}
+				<%- newBaseView %>.<%- view.children[indexChild] %> = new <%- moduleName %><%- view.children[indexChild] %>(param).render().<%- view.children[indexChild] %>;
+				if (<%- newBaseView %>.<%- view.children[indexChild] %>) {
+					<%- currentName %>.add(<%- newBaseView %>.<%- view.children[indexChild] %>);
+				}
+			<% } else { %>
+				<% var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+				var childResult = ejs.render(template, {isRequired : false, baseView : newBaseView, parentName : currentName, view : view.children[indexChild], indexChild : indexChild, parentCondition : view.conditionChild, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+				<%- childResult %>
+			<% } %>
+		<% } %>
+
+		//eventListener
+		<% for (indexEvent in view.eventListener) {
+			var currentEvent = view.eventListener[indexEvent]; %>
+			<% var template = fs.readFileSync('Resources/template/eventTemplate.ejs', 'utf8');
+			var eventResult = ejs.render(template, {baseView : newBaseView, event : currentEvent.event, action : currentEvent.action, parentName : currentName, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+			<%- eventResult %>
+		<% } %>
+
+		//newModel attributes
+		<% for (var newModelIndex in view.newModel) { %>
+			<%- newBaseView %>.newModel.push({objectName : "<%- view.name %>", modelAttribute : "<%- view.newModel[newModelIndex].modelAttribute %>", objectAttribute : "<%- view.newModel[newModelIndex].objectAttribute %>"});
+		<% } %>
+
+		//if isRequired then return a new object
+		<% if (view.isRequired && view.isRequired == true) { %>
+			return <%- moduleName %><%- view.name %>;
+		<% } %>
+
+	//if condition then close brackets of if
+	<% if (view.condition) { %>
+		}
+	<% } %>
+
+<% } %>

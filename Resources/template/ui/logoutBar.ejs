@@ -1,0 +1,175 @@
+/*
+Simply Mobile - Mobile Development Framework
+Copyright (c) 2012 Model N, Jérôme Ueberschlag, Clémence Aucagne, Jean-Baptiste Pringuey
+
+See the file license.txt for copying permission.
+*/
+
+
+var logoutBarAndroidFunction = function() {
+	<%- baseWindow %>.navBarHidden = true;
+
+	<%- baseWindow %>.logoutBarView = Ti.UI.createView({
+		height : SMapp.buttonSize,
+		width : '100%',
+		backgroundColor : '#1C5298',
+		top : 0
+	});
+
+	<% toNullList.push(baseToNullList + '.logoutBarView'); %>
+
+	<%- baseWindow %>.titleView = Ti.UI.createLabel({
+		color : 'white',
+		shadowColor : '#000',
+		shadowOffset : {x : 1,	y : 1},
+		heigth : Ti.UI.FILL,
+		textAlign : 'center'}
+	);
+
+	<% if (windowTitleType == 'directValue') { %>
+		<%- baseWindow %>.titleView.text = "<%- windowTitle %>";
+	<% } else if (windowTitleType == 'attributeValue') { %>
+		<%- baseWindow %>.titleView.text = <%- base %>.model.get("<%- windowTitle %>");
+	<% } %>
+
+	<%- baseWindow %>.logoutBarView.add(<%- baseWindow %>.titleView);
+
+	<% toNullList.push(baseToNullList + '.titleView'); %>
+
+	var buttonSize = 40;
+
+	<% if (rightNavButton) { %>
+		<% if (typeof rightNavButton == "string") { %>
+			var param = {};
+			if (this.model) {
+				param.model = this.model;
+			}
+			if (this.collection) {
+				param.collection = this.collection;
+			}
+				//push with baseView or something
+				toNullList.push(baseToNullList + '.' + rightNavButton);
+				//create/add the button with new
+				<%- baseWindow %>.<%- rightNavButton %> = new <%- moduleName %><%- rightNavButton %>(param).render().<%- rightNavButton %>;
+
+				if (<%- baseWindow %>.rightNavButton) {
+					<%- baseWindow %>.<%- rightNavButton %>.right = "3%";
+					<%- baseWindow %>.<%- rightNavButton %>.height = buttonSize * 0.9;
+					<%- baseWindow %>.<%- rightNavButton %>.top = buttonSize * 0.05;
+					<%- baseWindow %>.logoutBarView.add(<%- baseWindow %>.rightNavButton);
+				}
+				//push to toCallCloseList
+				toCallCloseList.push(baseToNullList + '.' + rightNavButton)
+
+		<% } else { %>
+			<% toNullList.push(baseToNullList + '.' + rightNavButton.name); %>
+			<% var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+			var childResult = ejs.render(template, {isRequired : false, baseView : base, parentName : baseWindow + '.logoutBarView', view : rightNavButton, indexChild : -1, parentCondition : undefined, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+			<%- childResult %>
+			<%- base %>.<%- rightNavButton.name %>.right = "3%";
+			<%- base %>.<%- rightNavButton.name %>.height = buttonSize * 0.9;
+			<%- base %>.<%- rightNavButton.name %>.top = buttonSize * 0.05;
+		<% } %>
+	<% } %>
+
+
+	<% if (leftNavButton) { %>
+		<% if (typeof leftNavButton == "string") { %>
+			var param = {};
+			if (this.model) {
+				param.model = this.model;
+			}
+			if (this.collection) {
+				param.collection = this.collection;
+			}
+				//push with baseView or something
+				toNullList.push(baseToNullList + '.' + leftNavButton);
+				//create/add the button with new
+				<%- baseWindow %>.<%- leftNavButton %> = new <%- moduleName %><%- leftNavButton %>(param).render().<%- leftNavButton %>;
+
+				if (<%- baseWindow %>.leftNavButton) {
+					<%- baseWindow %>.<%- leftNavButton %>.right = "3%";
+					<%- baseWindow %>.<%- leftNavButton %>.height = buttonSize * 0.9;
+					<%- baseWindow %>.<%- leftNavButton %>.top = buttonSize * 0.05;
+					<%- baseWindow %>.logoutBarView.add(<%- baseWindow %>.leftNavButton);
+				}
+				//push to toCallCloseList
+				toCallCloseList.push(baseToNullList + '.' + leftNavButton)
+
+		<% } else { %>
+			<% toNullList.push(baseToNullList + '.' + leftNavButton.name); %>
+			<% var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+			var childResult = ejs.render(template, {isRequired : false, baseView : base, parentName : baseWindow + '.logoutBarView', view : leftNavButton, indexChild : -1, parentCondition : undefined, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+			<%- childResult %>
+			<%- base %>.<%- leftNavButton.name %>.right = "3%";
+			<%- base %>.<%- leftNavButton.name %>.height = buttonSize * 0.9;
+			<%- base %>.<%- leftNavButton.name %>.top = buttonSize * 0.05;
+		<% } %>
+	<% } %>
+
+	<%- baseWindow %>.add(<%- baseWindow %>.logoutBarView);
+
+};
+
+var defFunctionButtons = function () {
+	var buttonSize = 40;
+
+	<% if (rightNavButton) { %>
+		<% if (typeof rightNavButton == "string") { %>
+			var param = {};
+			if (this.model) {
+				param.model = this.model;
+			}
+			if (this.collection) {
+				param.collection = this.collection;
+			}
+				//push with baseView or something
+				toNullList.push(baseToNullList + '.' + rightNavButton);
+				//create/add the button with new
+				<%- baseWindow %>.<%- rightNavButton %> = new <%- moduleName %><%- rightNavButton %>(param).render().<%- rightNavButton %>;
+				//push to toCallCloseList
+				toCallCloseList.push(baseToNullList + '.' + rightNavButton)
+
+		<% } else { %>
+			<% toNullList.push(baseToNullList + '.' + rightNavButton.name); %>
+			<% var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+			var childResult = ejs.render(template, {isRequired : false, baseView : base, parentName : baseWindow + '.logoutBarView', view : rightNavButton, indexChild : -1, parentCondition : undefined, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+			<%- childResult %>
+			//trick to remove button from child and set it to rightNavButton
+			<%- baseWindow %>.remove(<%- base %>.<%- rightNavButton.name %>);
+			<%- baseWindow %>.rightNavButton = <%- base %>.<%- rightNavButton.name %>;
+		<% } %>
+	<% } %>
+
+	<% if (leftNavButton) { %>
+		<% if (typeof leftNavButton == "string") { %>
+			var param = {};
+			if (this.model) {
+				param.model = this.model;
+			}
+			if (this.collection) {
+				param.collection = this.collection;
+			}
+				//push with baseView or something
+				toNullList.push(baseToNullList + '.' + leftNavButton);
+				//create/add the button with new
+				<%- baseWindow %>.<%- leftNavButton %> = new <%- moduleName %><%- leftNavButton %>(param).render().<%- leftNavButton %>;
+				//push to toCallCloseList
+				toCallCloseList.push(baseToNullList + '.' + leftNavButton)
+
+		<% } else { %>
+			<% toNullList.push(baseToNullList + '.' + leftNavButton.name); %>
+			<% var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+			var childResult = ejs.render(template, {isRequired : false, baseView : base, parentName : baseWindow + '.logoutBarView', view : leftNavButton, indexChild : -1, parentCondition : undefined, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+			<%- childResult %>
+			//trick to remove button from child and set it to leftNavButton
+			<%- baseWindow %>.remove(<%- base %>.<%- leftNavButton.name %>);
+			<%- baseWindow %>.leftNavButton = <%- base %>.<%- leftNavButton.name %>;
+		<% } %>
+	<% } %>
+};
+
+SMapp.os({android : logoutBarAndroidFunction, def : defFunctionButtons});	
+
+logoutBarFunction = null;
+defFunctionButtons = null;

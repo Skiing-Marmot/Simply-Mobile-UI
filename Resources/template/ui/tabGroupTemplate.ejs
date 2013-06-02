@@ -1,0 +1,231 @@
+/*
+Simply Mobile - Mobile Development Framework
+Copyright (c) 2012 Model N, Jérôme Ueberschlag, Clémence Aucagne, Jean-Baptiste Pringuey
+
+See the file license.txt for copying permission.
+*/
+
+//backbone view creation for a tabgroup
+<%- moduleName %><%- view.name %> = Backbone.View.extend({
+
+	//list to create the close function
+	<% var toNullList = []; %>
+	<% var toCallCloseList = []; %>
+	<% var toRemoveList = []; %>
+	<% var toCloseTabList = []; %>
+	<% var toFireCloseList = []; %>
+	<% var closeBind = []; %>
+
+	_modelBinder: undefined,
+	newModel: [],
+	    
+    initialize: function() {
+        _.bindAll(this);
+
+        <% if (view.model) { %>
+        	this.model = SMapp.<%= moduleName %>.<%- view.model %>Collection.at(0);
+	        this.collection = SMapp.<%= moduleName %>.<%- view.model %>Collection;
+        <% } else if (view.nestCollection) { %>
+	        this.collection = this.model.<%- view.nestCollection %>Coll;
+        	this.model = this.collection.at(0);
+        <% } %>
+        if (this.model) {
+        	this._modelBinder = new Backbone.ModelBinder();
+        	this.model.bind("destroy", this.close, this);
+    	}
+    	
+        <% closeBind.push('this.model.unbind("destroy", this.close);'); %>
+        //alias for this
+        var this<%- view.name %> = this;
+        //biding list
+        this.toBind = [];
+
+        //create the window
+        this.<%- view.name %> = Titanium.UI.createTabGroup(
+		<% toNullList.push('this.' + view.name); %>
+		<% toCallCloseList.push('this.' + view.name); %>
+		<% var template = fs.readFileSync('Resources/template/paramsTemplate.ejs', 'utf8');
+		var paramsResult = ejs.render(template, {params : view.params, className : view.className, classId : view.id, moduleName : moduleName, baseView : 'this'+view.name, parentName : 'this'+view.name+'.'+view.name, mainWindowName : 'this'+view.name+'.'+view.name, ejs : ejs, fs : fs}); %>
+		<%- paramsResult %>
+
+		// create and add tabs to the tabGroup
+		<% for (tabsIndex in view.tabs) { %>
+			//include
+			<% if (view.tabs[tabsIndex].require) { %>
+				<% var includedFile = fs.readFileSync('Resources/'+ view.tabs[tabsIndex].require);
+				var parsedIncludedFile = JSON.parse(includedFile);
+				parsedIncludedFile.tabIndex = tabsIndex;
+				var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+				var childResult = ejs.render(template, {isRequired : false, baseView : 'this'+view.name, parentName : view.name, view : parsedIncludedFile, moduleName : moduleName, mainWindowName : 'this'+view.name+'.'+view.name, ejs : ejs, fs : fs}); %>
+				<%- childResult %>		
+			<% } else { %>
+				<% var isRequired = false; 
+				if (typeof view.tabs[tabsIndex] == 'string') { 
+					isRequired = true; %>
+					var param = {};
+					if (this.model) {
+						param.model = this.model;
+					}
+					if (this.collection) {
+						param.collection = this.collection;
+					}
+					this<%- view.name %>.<%- view.tabs[tabsIndex] %> = new <%- moduleName %><%- view.tabs[tabsIndex] %>(param).render().<%- view.tabs[tabsIndex] %>;
+					<% toCloseTabList.push('this' + view.name + '.' + view.tabs[tabsIndex]); %>
+					this<%- view.name %>.<%- view.name %>.addTab(this<%- view.name %>.<%- view.tabs[tabsIndex] %>);
+					this<%- view.name %>.<%- view.name %>.currentTab = this<%- view.name %>.<%- view.tabs[tabsIndex] %>;
+					this<%- view.name %>.<%- view.name %>.setActiveTab(this<%- view.name %>.<%- view.tabs[tabsIndex] %>);
+
+				<% } else { %>
+					//create tab call
+					<% var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+					view.tabs[tabsIndex].tabIndex = tabsIndex;
+					toRemoveList.push('this.tab' + view.tabs[tabsIndex].tabIndex);
+					toCloseTabList.push('this.tab' + view.tabs[tabsIndex].tabIndex);
+					var tabResult = ejs.render(template, {isRequired : isRequired, baseView : 'this'+view.name, parentName : view.name, view : view.tabs[tabsIndex], moduleName : moduleName, mainWindowName : 'this'+view.name+'.'+view.name, ejs : ejs, fs : fs}); %>
+					<%- tabResult %>
+				<% } %>
+			<% } %>
+		<% } %>
+
+		//track the current tab for the tab group
+		var <%= moduleName %><%= view.name %>SetCurrentTab = function(e) {
+			if (e.tab) {
+				this<%- view.name %>.<%- view.name %>.currentTab = e.tab;
+			}
+		};
+		this.<%- view.name %>.addEventListener('focus', <%= moduleName %><%= view.name %>SetCurrentTab);
+
+		//track the current tab for the tab group
+		var <%= moduleName %><%= view.name %>CloseAndroid = function(e) {
+			this<%- view.name %>.<%- view.name %>.close();
+		};
+		this.<%- view.name %>.addEventListener('android:back', <%= moduleName %><%= view.name %>CloseAndroid);
+
+		var <%= moduleName %><%= view.name %>CurrentTabCloseHandler = function(e) {
+			if (<%= moduleName %><%= view.name %>SetCurrentTab && <%= moduleName %><%= view.name %>SetCurrentTab != null) { 
+				this<%- view.name %>.<%- view.name %>.removeEventListener('focus', <%= moduleName %><%= view.name %>SetCurrentTab);			
+			}
+			<%= moduleName %><%= view.name %>SetCurrentTab = null;
+			if (<%= moduleName %><%= view.name %>CloseAndroid && <%= moduleName %><%= view.name %>CloseAndroid != null) { 
+				this<%- view.name %>.<%- view.name %>.removeEventListener('android:back', <%= moduleName %><%= view.name %>CloseAndroid);
+			}
+			<%= moduleName %><%= view.name %>CloseAndroid = null;			
+			if (<%= moduleName %><%= view.name %>CurrentTabCloseHandler && <%= moduleName %><%= view.name %>CurrentTabCloseHandler != null) { 
+				this<%- view.name %>.<%- view.name %>.removeEventListener('close', <%= moduleName %><%= view.name %>CurrentTabCloseHandler);
+			}
+			<%= moduleName %><%= view.name %>CurrentTabCloseHandler = null;
+		};
+		this.<%- view.name %>.addEventListener('close', <%= moduleName %><%= view.name %>CurrentTabCloseHandler);
+
+		//logout handler
+		var <%- moduleName %><%- view.name %>Logout = function() {
+			SMapp.os({
+				def : function() {
+					SMapp.navgroup.close(this<%- view.name %>.<%- view.name %>);
+				},
+				android : function() {
+					if (this<%- view.name %>.<%- view.name %>) {
+						this<%- view.name %>.<%- view.name %>.close();
+					}
+				}
+			});
+			this<%- view.name %>.close();
+			SMapp.utils.destroy(this<%- view.name %>.<%- view.name %>);
+		};
+		Ti.App.addEventListener('logout', <%- moduleName %><%- view.name %>Logout);
+
+		var <%- moduleName %><%- view.name %>CloseHandler = function () {
+			if (<%= moduleName %><%= view.name %>Logout && <%= moduleName %><%= view.name %>Logout != null) { 
+				Ti.App.removeEventListener('logout', <%- moduleName %><%- view.name %>Logout);
+			}
+			<%- moduleName %><%- view.name %>Logout = null;
+			if (<%= moduleName %><%= view.name %>CloseHandler && <%= moduleName %><%= view.name %>CloseHandler != null) { 
+				this<%- view.name %>.<%- view.name %>.removeEventListener("close", <%- moduleName %><%- view.name %>CloseHandler);
+			}
+			<%- moduleName %><%- view.name %>CloseHandler = null;
+		};
+		this.<%- view.name %>.addEventListener("close", <%- moduleName %><%- view.name %>CloseHandler);
+
+		//close eventListener
+		this.<%- view.name %>.addEventListener("close", this.close);
+
+	    return this.<%- view.name %>;
+    },
+
+    close: function () {
+
+		this.<%- view.name %>.removeEventListener("close", this.close);
+
+    	if (this._modelBinder) {
+    		this._modelBinder.unbind();
+    	}  
+
+    	<% for (var toRemoveIndex in toRemoveList) { %>
+    		this.<%- view.name %>.removeTab(<%- toRemoveList[toRemoveIndex] %>);
+    	<% } %> 
+
+    	<% for (var toCallCloseIndex in toCallCloseList) { %>
+    		if (<%- toCallCloseList[toCallCloseIndex] %>) {
+	    		<%- toCallCloseList[toCallCloseIndex] %>.close();
+	    	}
+    	<% } %>
+
+    	<% for (var toFireCloseIndex in toFireCloseList) { %>
+    		if (<%- toFireCloseList[toFireCloseIndex] %> && <%- toFireCloseList[toFireCloseIndex] %> != null && <%- toFireCloseList[toFireCloseIndex] %>.fireEvent) {
+	    		<%- toFireCloseList[toFireCloseIndex] %>.fireEvent('close');
+	    	}
+    	<% } %>
+
+    	<% for (var toCloseTabIndex in toCloseTabList) { %>
+    		if (<%- toCloseTabList[toCloseTabIndex] %>) {
+    			//iOS tab close take the window in param
+    			<%- toCloseTabList[toCloseTabIndex] %>.fireEvent('close');
+    			if (Ti.Platform.osname == 'android') {
+    				<%- toCloseTabList[toCloseTabIndex] %>.close();
+    			}
+    			else {
+    				<%- toCloseTabList[toCloseTabIndex] %>.close(<%- toCloseTabList[toCloseTabIndex] %>.window);
+    			}
+	    	}
+    	<% } %>	
+
+    	<% for (var toNullIndex in toNullList) { %>
+        	if (<%- toNullList[toNullIndex] %> && <%- toNullList[toNullIndex] %> != null) {
+	    		SMapp.utils.destroy(<%- toNullList[toNullIndex] %>);
+	    	}
+    	<% } %>
+    	
+    	<% for (tabsIndex in view.tabs) { %>
+    		SMapp.utils.destroy(this.tab<%- tabsIndex %>);
+		<% } %>
+    	<% for (var closeBindIndex in closeBind) { %>
+    		if (this.model) {
+    			<%- closeBind[closeBindIndex] %>
+    		}
+    	<% } %>
+    },
+
+    destroy: function () {
+    	//fireEvent on father
+    	this.model.destroy();
+    },
+
+    render: function(eventName) {
+		if (this._modelBinder) {
+	    	//for loop on this.toBind
+	    	var bindings = {};
+	    	for (var bindingIndex in this.toBind) {
+	    		var currentToBind = this.toBind[bindingIndex];
+				if (!bindings[currentToBind.attribute]) {
+	    			bindings[currentToBind.attribute] = [];
+	    		}
+	    		bindings[currentToBind.attribute].push(currentToBind.bind);
+	    	}
+	    	
+	        this._modelBinder.bind(this.model, this.<%- view.name %>, bindings);
+	        //unreference
+	        this.toBind = null;
+	    }
+        return this;
+    }
+});

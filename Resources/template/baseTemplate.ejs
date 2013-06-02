@@ -1,0 +1,157 @@
+/*
+Simply Mobile - Mobile Development Framework
+Copyright (c) 2012 Model N, Jérôme Ueberschlag, Clémence Aucagne, Jean-Baptiste Pringuey
+
+See the file license.txt for copying permission.
+*/
+
+
+//variable to include files only one time
+<% var requireFiles = []; %>
+
+//loading screen while loading
+if (SMapp.spinnerWindow) {
+	SMapp.spinnerWindow.show();
+}
+
+// Appcelerator library include: underscore and backbone
+Ti.include(Titanium.Filesystem.resourcesDirectory+'/lib/underscore.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory+'/lib/backbone.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory+'/lib/Backbone.CollectionUpdate.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory+'/lib/Backbone.Sync.Ti.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory+'/lib/Backbone.DeepModel.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory+'/lib/Backbone.ModelBinder.Ti.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory+'/lib/Backbone.CollectionBinder.Ti.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory+'/lib/Backbone.Utils.js');
+Ti.include(Titanium.Filesystem.resourcesDirectory+'/lib/backbone.subset.js');
+
+// Library for template
+<% var utilsFile = fs.readFileSync('Resources/template/utils.js', 'utf8'); %>
+<%- utilsFile %>
+
+// Context variable for the <%= module.moduleName %> app
+SMapp.<%= module.moduleName %> = {
+	data : null,
+	loadingNumber : 0,
+	app : {
+		name : "<%= module.moduleName %>",
+		id : "<%= module.moduleName %>"
+	},
+	constants : {},
+	setIntervalList : []
+};
+
+//Style sheet include
+<% if (module.styleFile) {
+	var styleSheet = fs.readFileSync('apps/' + module.moduleName + '/' + module.styleFile, 'utf8'); %>
+	<%- styleSheet %>
+<% } %>
+
+//models
+<% var template = fs.readFileSync('Resources/template/modelTemplate.ejs', 'utf8');
+var modelsResult = ejs.render(template, {module : module, ejs : ejs, fs : fs}); %>
+<%- modelsResult %>
+
+//collections
+<% var template = fs.readFileSync('Resources/template/collectionTemplate.ejs', 'utf8');
+var collectionsResult = ejs.render(template, {module : module, ejs : ejs, fs : fs}); %>
+<%- collectionsResult %>
+
+//require files
+<% for (var requireIndex in module.require) { %>
+	<% var requiredFile = fs.readFileSync('apps/' + module.moduleName + '/' + module.require[requireIndex]);
+	var parsedIncludedFile = JSON.parse(requiredFile); 
+	var template = fs.readFileSync('Resources/template/requireTemplate.ejs', 'utf8');
+	var requireResult = ejs.render(template, {requireFiles : requireFiles, package : undefined, moduleName : module.moduleName, mainWindowName : module.views[0].name, require : parsedIncludedFile, ejs : ejs, fs : fs}); %>
+	<%- requireResult %>
+<% } %>
+
+//all backbone view
+<% for (winIndex = 0; winIndex < module.views.length; winIndex++) { 
+	var currentWindow = module.views[winIndex]; %>
+	//include
+	<% if (currentWindow.require) { %>
+		<% var includedFile = fs.readFileSync('Resources/'+ currentWindow.require);
+		var parsedIncludedFile = JSON.parse(includedFile); 
+		var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+		var windowResult = ejs.render(template, {isRequired : false, view : parsedIncludedFile, moduleName : module.moduleName, mainWindowName : module.views[0].name, isTabWindow : false, ejs : ejs, fs : fs}); %>
+		<%- windowResult %>
+	//direct description
+	<% } else { %>
+		<% var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+		var windowResult = ejs.render(template, {isRequired : false, view : currentWindow, moduleName : module.moduleName, mainWindowName : module.views[0].name, isTabWindow : false, ejs : ejs, fs : fs}); %>
+		<%- windowResult %>
+
+	<% } %>
+
+<% } %>
+
+
+// Event listeners
+if (SMapp.<%= module.moduleName %>.loadingNumber == 0) {
+	// The corresponding event is fired when the app is added to the dashboard
+	Ti.App.addEventListener('load' + SMapp.<%= module.moduleName %>.app.id, load<%= module.moduleName %>App);
+
+	var open<%= module.moduleName %> = function(e) {
+		// Open the view
+		if (Ti.Platform.osname == 'android') {			
+			new <%- module.moduleName %><%- module.views[0].name %>().render().<%- module.views[0].name %>.open();
+		} else {
+			SMapp.navgroup.open(new <%- module.moduleName %><%- module.views[0].name %>().render().<%- module.views[0].name %>, {
+				animated : true
+			});
+		}
+	};
+	// The corresponding event is fired when the app icon is clicked in the dashboard
+	Ti.App.addEventListener('open' + SMapp.<%= module.moduleName %>.app.id, open<%= module.moduleName %>);
+
+
+	var <%= module.moduleName %>GlobalLoggedOut = function(e) {
+		SMapp.<%= module.moduleName %>.data = [];
+		SMapp.<%= module.moduleName %>.app.appDirectory = null;
+
+		//Remove periodic call to collection.fetch()
+		for (var intervalIndex in SMapp.<%= module.moduleName %>.setIntervalList) {
+			clearInterval(SMapp.<%= module.moduleName %>.setIntervalList[intervalIndex]);
+		}
+
+		//remove eventListener
+		Ti.App.removeEventListener('load' + SMapp.<%= module.moduleName %>.app.id, load<%= module.moduleName %>App);
+		Ti.App.removeEventListener('open' + SMapp.<%= module.moduleName %>.app.id, open<%= module.moduleName %>);
+		Ti.App.removeEventListener('logout', <%= module.moduleName %>GlobalLoggedOut);
+	};
+	Ti.App.addEventListener('logout', <%= module.moduleName %>GlobalLoggedOut);
+}
+
+
+// Load and set the periodicall call to the fetch function of collection
+function load<%= module.moduleName %>App(args) {
+	//increment of loadingNumber
+	SMapp.<%= module.moduleName %>.loadingNumber = SMapp.<%= module.moduleName %>.loadingNumber + 1;
+
+	// If it is the first time we load this application
+	if (SMapp.<%= module.moduleName %>.loadingNumber == 1) {
+		SMapp.<%= module.moduleName %>.app = args.app;
+
+		<% if (module.autoRefresh && module.autoRefresh == true) { %>
+			//set periodic call to collection.fetch()
+			<% for (var collectionIndex in module.collections) { %>
+				<% if (module.collections[collectionIndex].fetch && module.collections[collectionIndex].fetch == true) { %>
+				    var setIntervalId = setInterval(function() {
+				    	if (Ti.Network.online && BackboneWaitingSyncList.length == 0) {
+				            SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].name %>Collection.fetch({
+				                update : true, removeMissing : true
+				            });
+				        }
+				    }, <%- module.refreshTime %>);
+
+				    SMapp.<%= module.moduleName %>.setIntervalList.push(setIntervalId);
+				<% } %>
+			<% } %>
+		<% } %>
+	}
+}
+
+if (SMapp.spinnerWindow) {
+	SMapp.spinnerWindow.hide();
+}

@@ -1,0 +1,247 @@
+/*
+Simply Mobile - Mobile Development Framework
+Copyright (c) 2012 Model N, Jérôme Ueberschlag, Clémence Aucagne, Jean-Baptiste Pringuey
+
+See the file license.txt for copying permission.
+*/
+
+
+<% var isEmpty = function (object) {
+	var result = true;
+	for (var i in object) {
+		result = false;
+		break;
+	}
+	return result;
+} %>
+
+
+<% var getParamList = function(params, parentName, moduleName, paramListType, converter, attributeToBind) {
+	var response = {content : '', after : ''};
+	var keys = [];
+	for (var paramsIndex in params) {
+		//push into the table only if the type implies a " name : value" in the object
+		var push = false;
+		if (params[paramsIndex].type == "directValue") {
+			if (params[paramsIndex].valueType == "String") {
+				push = true;
+			}
+			else if (params[paramsIndex].valueType == "Int") {
+				push = true;
+			}
+			else if (params[paramsIndex].valueType == "Direct") {
+				push = true;
+			}
+			else if (params[paramsIndex].valueType == "Object") {
+				push = true;
+			}
+		}
+		//directValue
+		else if (params[paramsIndex].type == "attributeValue") {
+				push = true;
+		}
+
+		if (push == true) {
+			keys.push(paramsIndex);
+		}
+	}
+	for (var paramsIndex in params) {
+		//directValue
+		if (params[paramsIndex].type == "directValue") {
+			//if loadPath then add after the declaration
+			if (params[paramsIndex].valueType == "LoadPath") {
+
+				if (typeof params[paramsIndex].value == 'object') {
+					secondPart = 'SMapp.os({';
+					for (var indexDef in params[paramsIndex].value) {
+						secondPart += indexDef + ' : function () { ' + 'SMapp.loadFile(SMapp.'+ moduleName + '.app.appDirectory, SMapp.appsUrl + \'/\' + SMapp.' + moduleName + '.app.id + \''+ params[paramsIndex].value[indexDef] +'\', '+parentName+', \''+ paramsIndex +'\');\n' +'} ,';
+					}
+					if (!isEmpty(params[paramsIndex].value)) {
+						secondPart = secondPart.substring(0,secondPart.length - 1);
+					}
+					secondPart += '});';
+
+					response.after += secondPart;
+
+				}
+				else {
+					response.after += 'SMapp.loadFile(SMapp.'+ moduleName + '.app.appDirectory, SMapp.appsUrl + \'/\' + SMapp.' + moduleName + '.app.id + \''+ params[paramsIndex].value +'\', '+parentName+', \''+ paramsIndex +'\');\n';
+				}
+
+			}
+			//if object then recursive call
+			else if (params[paramsIndex].valueType == "Object") {
+				var firstPart, secondPart;
+				firstPart = paramsIndex;
+
+				//recursive call
+				var temp = getParamList(params[paramsIndex].value, parentName, moduleName, 0x7);
+				secondPart = '{' + temp.content + '}';
+
+				if (paramListType & 0x2) {
+					response.content += firstPart;
+				}
+				if (paramListType & 0x4) {
+					response.content += " : ";
+				}
+				if (paramListType & 0x1) {
+					response.content += secondPart;
+				}
+
+			}
+			//else
+			else {
+
+				//def or android value handler
+				var firstPart, secondPart;
+				if (typeof params[paramsIndex].value == 'object') {
+					firstPart = paramsIndex;
+					secondPart = 'SMapp.os({';
+					for (var indexDef in params[paramsIndex].value) {
+						if (params[paramsIndex].valueType == "String") {
+							secondPart += indexDef + ' : "' + params[paramsIndex].value[indexDef] +'",';
+						}
+						else if (params[paramsIndex].valueType == "Int" || params[paramsIndex].valueType == "Direct") {
+							secondPart += indexDef + ' : ' + params[paramsIndex].value[indexDef] +',';
+						}
+					}
+					if (!isEmpty(params[paramsIndex].value)) {
+						secondPart = secondPart.substring(0,secondPart.length - 1);
+					}
+					secondPart += '})';
+
+				}
+				else {
+					if (params[paramsIndex].valueType == "String") {
+						firstPart = paramsIndex;
+						secondPart = '"' + params[paramsIndex].value + '"';
+					}
+					else if (params[paramsIndex].valueType == "Int" || params[paramsIndex].valueType == "Direct") {
+						firstPart = paramsIndex;
+						secondPart = params[paramsIndex].value;
+					}
+				}
+
+				if (paramListType & 0x2) {
+					response.content += firstPart;
+				}
+				if (paramListType & 0x4) {
+					response.content += " : ";
+				}
+				if (paramListType & 0x1) {
+					response.content += secondPart;
+				}
+			}
+		}
+
+		//attributeValue
+		else if (params[paramsIndex].type == "attributeValue") {
+			//respose.content
+			var firstPart, secondPart;
+			firstPart = paramsIndex;
+
+			if (params[paramsIndex].valueType == 'SearchModel'){
+				secondPart = '\'\'';
+				for (var att in params[paramsIndex].value) {
+					secondPart += '+' + baseView + '.model.get("' + params[paramsIndex].value[att] + '")';
+				}
+			}
+			else if (params[paramsIndex].valueType == 'Search'){
+				for (var att in params[paramsIndex].value) {
+					secondPart = '\'\'';
+					secondPart += '+"' + params[paramsIndex].value[att] + '" ';
+				}
+			}
+			else if (typeof params[paramsIndex].value == 'object') {
+				secondPart = 'SMapp.os({';
+				for (var indexDef in params[paramsIndex].value) {
+					secondPart += indexDef + ' : ' + params[paramsIndex].value[indexDef] +',';
+				}
+				if (!isEmpty(params[paramsIndex].value)) {
+					secondPart = secondPart.substring(0,secondPart.length - 1);
+				}
+				secondPart += '})';
+
+			}
+			else {
+				if (!attributeToBind) {
+					secondPart = baseView + '.model.get("' + params[paramsIndex].value + '")';
+				}
+				var tempConverter = converter || params[paramsIndex].converter;
+				var tempEl = attributeToBind || paramsIndex;
+				response.after += 'var toBind = {attribute : "' + params[paramsIndex].value + '", bind : {el : ' + parentName + ', attribute : "' + tempEl + '" , converter : ' + tempConverter + ' }};\n';
+				response.after += 'if ('+baseView+'.toBind) {';
+				response.after += baseView +'.toBind.push(toBind);';
+				response.after += '}';
+			}
+
+			if (paramListType & 0x2) {
+				response.content += firstPart;
+			}
+			if (paramListType & 0x4) {
+				response.content += " : ";
+			}
+			if (paramListType & 0x1) {
+				response.content += secondPart;
+			}
+		}
+
+		//calculatedValue
+		else if (params[paramsIndex].type == "calculatedValue") {
+			//create function
+			response.after += 'var parameter'+ paramsIndex +'Function = function(direction, value, attributeName, model) {\n';
+
+			//replace of argument name with model.get(attributeName)
+			var tempToAdd = params[paramsIndex].value;
+			var tempRegExp = null;
+			for (var pIndex in params[paramsIndex].parameters) {
+				tempRegExp = new RegExp(pIndex, "g");
+				tempToAdd = tempToAdd.replace(tempRegExp, "model.get(\"" + params[paramsIndex].parameters[pIndex].value + "\")");
+			}
+			tempRegExp = null;
+			response.after += tempToAdd ;
+
+			response.after += '\n};\n';
+
+			//if normal attribute is return : just a set of the attribute
+			var temp = getParamList(params[paramsIndex].parameters, parentName, moduleName, 0x1, 'parameter'+ paramsIndex +'Function', paramsIndex);
+			response.after += temp.after;
+			// TODO : alias for image loader
+
+		}
+
+
+		if (keys.indexOf(paramsIndex) > -1 && paramsIndex != keys[keys.length - 1]) {
+			response.content += ',\n'
+		}
+	}
+	return response;
+};  %>
+
+
+
+
+
+//if the item is related to a class
+<% if (className || classId) { %>
+	<% var paramListResult = getParamList(params, parentName, moduleName, 0x7); 
+	var styleName = '';
+	if (className) {
+		styleName += className;
+	}
+	if (classId) {
+		styleName += "_" + classId;
+	} %>
+	extend([$$["<%- styleName %>"], { <%- paramListResult.content %>}]));
+
+	//after content
+	<%- paramListResult.after %>
+<% } else { %>
+	{
+	<% var paramListResult = getParamList(params, parentName, moduleName, 0x7); %>
+	<%- paramListResult.content %>
+	});
+
+	//after content
+	<%- paramListResult.after %>
+<% } %>

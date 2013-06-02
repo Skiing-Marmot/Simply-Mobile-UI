@@ -1,0 +1,21 @@
+{
+	"applicationNameIcon" : "RSS Reader",
+	"applicationName" : "RSSReader",
+	"icon" : "rss.png",
+	"version" : "1.0",
+	"publisher" : "Jerome U",
+	"website" : "https://github.com/jueberschlag/",
+	"description" : "Demo app of the mobile framework",
+	"copyright" : "MIT license",
+	"serverUrl" : "https://modeln-serverdev.herokuapp.com/",
+	"target" : [
+		"iphone",
+		"android",
+		"ipad"
+	],
+	"acs-oauth-secret-production" : null,
+	"manifest" : null,
+	"allowVertical" : true,
+	"allowHorizontal" : true,
+	"baseFile" : "RSSReader"
+}

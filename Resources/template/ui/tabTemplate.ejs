@@ -1,0 +1,250 @@
+/*
+Simply Mobile - Mobile Development Framework
+Copyright (c) 2012 Model N, Jérôme Ueberschlag, Clémence Aucagne, Jean-Baptiste Pringuey
+
+See the file license.txt for copying permission.
+*/
+
+
+// Create the tab
+<% if (isRequired && isRequired == true) { %>
+
+	//backbone view template
+	<%- moduleName %><%- tab.name %> = Backbone.View.extend({
+	    
+		//list to create the close function
+		<% var toNullList = []; %>
+		<% var toCalltoNullList = []; %>
+		<% var closeBind = []; %>
+
+		//variables to pass to children
+		<% var newBaseView, newParentName; %>
+
+	    _modelBinder: undefined,
+	    newModel: [],
+
+	    initialize: function() {
+	        _.bindAll(this);
+
+	        <% if (tab.model) { %>
+	        	this.model = SMapp.<%= moduleName %>.<%- tab.model %>Collection.at(0);
+		        this.collection = SMapp.<%= moduleName %>.<%- tab.model %>Collection;
+	        <% } else if (tab.nestCollection) { %>
+		        this.collection = this.model.<%- tab.nestCollection %>Coll;
+	        	this.model = this.collection.at(0);
+	        <% } %>
+	        if (this.model) {
+	        	this._modelBinder = new Backbone.ModelBinder();
+	        	//bindings
+		        this.model.bind("destroy", this.close, this);
+		        <% closeBind.push('this.model.unbind("destroy", this.close);'); %>
+	    	}
+
+			//test condition
+			<% if (tab.condition) { %>
+				if (<%- tab.condition %>) {
+			<% } %>
+
+		        this.toBind = [];
+
+		        //alias for this used by children
+		        var this<%- tab.name %> = this;
+
+				<% 
+					newBaseView = "this" + tab.name;
+					newParentName = "this" + tab.name + "." + tab.name; 
+				%>
+
+				//create window for the tab
+				<% if (typeof tab.window != "string") { %>
+					<% var template = fs.readFileSync('Resources/template/ui/windowTemplate.ejs', 'utf8');
+					var windowResult = ejs.render(template, {isRequired : false, className : tab.className, classId : tab.id, baseView : newBaseView, parentName : newParentName, window : tab.window, moduleName : moduleName, mainWindowName : mainWindowName, isTabWindow : true, ejs : ejs, fs : fs}); %>
+					<%- windowResult %>
+				<% } else { %>
+					var param = {};
+					if (this.model) {
+						param.model = this.model;
+					}
+					if (this.collection) {
+						param.collection = this.collection;
+					}
+					<%- newBaseView %>.<%- tab.window.name %> = new <%- moduleName %><%- tab.window.name %>(param).render().<%- tab.window.name %>;
+				<% } %>
+					
+
+				//create params
+		        <% if (! (tab.params)) {
+		        	tab.params = {};
+		        } %>
+
+		        //params modif
+		        <% tab.params.window = {
+					type: "directValue",
+					valueType: "Direct", 
+					value: newBaseView + "." + tab.window.name
+				}; %>
+				<% toNullList.push(newBaseView + '.' + tab.window.name); %>
+				<% tab.params.title = tab.title; %>
+
+		        <%- newParentName %> = Ti.UI.create<%- tab.constructorType %>(
+				<% toNullList.push(newParentName); %>
+				<% toNullList.push(newBaseView); %>
+
+				<% var template = fs.readFileSync('Resources/template/paramsTemplate.ejs', 'utf8');
+				var paramsResult = ejs.render(template, {params : tab.params, className : tab.className, classId : tab.id, moduleName : moduleName, parentName : newParentName, baseView : 'this' + tab.name, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+				<%- paramsResult %>
+
+				<% if (tab.icon) { %>
+					SMapp.loadFile(SMapp.<%- moduleName %>.app.appDirectory, SMapp.appsUrl + '/' + SMapp.<%- moduleName %>.app.id + '<%- tab.icon.value %>', <%- newParentName %>, 'icon');
+				<% } %>
+
+				//ceate the children views
+				<% for (indexChild in tab.children) { %>
+					<% if (typeof tab.children[indexChild] == "string") { %>
+						var param = {};
+						if (this.model) {
+							param.model = this.model;
+						}
+						if (this.collection) {
+							param.collection = this.collection;
+						}
+						<% toNullList.push(this+'.'+ tab.children[indexChild]); %>
+						<%- newBaseView %>.<%- tab.children[indexChild] %> = new <%- moduleName %><%- tab.children[indexChild] %>(param).render().<%- tab.children[indexChild] %>;			
+						<% toNullList.push(newBaseView + '.' + tab.children[indexChild]); %>
+						if (<%- newBaseView %>.<%- tab.children[indexChild] %>) {
+							<%- newBaseView %>.<%- tab.name %>.add(this<%- tab.name %>.<%- tab.children[indexChild] %>);	
+						}
+					<% } else { %>
+						<% toNullList.push('this.'+ tab.children[indexChild].name); %>
+						<% var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+						var childResult = ejs.render(template, {isRequired : false, baseView : newBaseView, parentName : newParentName, view : tab.children[indexChild], indexChild : indexChild, parentCondition : tab.conditionChild, moduleName : moduleName, mainWindowName : mainWindowName, toNullList : toNullList, ejs : ejs, fs : fs}); %>
+						<%- childResult %>
+					<% } %>
+				<% } %>
+
+				//eventListener
+				<% for (indexEvent in tab.eventListener) {
+					var currentEvent = tab.eventListener[indexEvent]; %>
+					<% var template = fs.readFileSync('Resources/template/eventTemplate.ejs', 'utf8');
+					var eventResult = ejs.render(template, {baseView : 'this' + tab.name, event : currentEvent.event, action : currentEvent.action, parentName : newParentName, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+					<%- eventResult %>
+				<% } %>
+		        
+		        return <%- newParentName %>;
+
+			//test condition
+			<% if (tab.condition) { %>
+				} else { return this; }
+			<% } %>
+	    },
+	    
+	    render: function(eventName) {
+	    	//test condition
+			<% if (tab.condition) { %>
+				if (<%- tab.condition %>) {
+			<% } %>
+				this.<%- tab.name %>.removeEventListener("close", this.close);    	
+
+		    	<% for (var toCloseIndex in toNullList) { %>
+		    		if (<%- toNullList[toCloseIndex] %>) {
+			    		<%- toNullList[toCloseIndex] %>.close();
+			    	}
+		    	<% } %>
+
+		    	if (this._modelBinder) {
+			    	var bindings = {};
+			    	for (var bindingIndex in this.toBind) {
+			    		var currentToBind = this.toBind[bindingIndex];
+						if (!bindings[currentToBind.attribute]) {
+			    			bindings[currentToBind.attribute] = [];
+			    		}
+			    		bindings[currentToBind.attribute].push(currentToBind.bind);
+			    	}
+
+			    	<% var newParentName = "this." + tab.name; %>
+
+			        //unreference
+			        this.toBind = null;
+			        this._modelBinder.bind(this.model, <%- newParentName %>, bindings);
+			    }
+		        return this;
+
+		    //test condition
+			<% if (tab.condition) { %>
+				} else {return this;}
+			<% } %>
+	    },
+
+	    destroy: function () {
+	    	//fireEvent on father
+	    	this.model.destroy();
+	    },
+	    
+	    close: function() {
+	     	//unbind modelBinder
+	    	if (this._modelBinder) {
+	    		this._modelBinder.unbind();
+	    	}
+	    	//element to put to null
+	        <% for (var toNullIndex in toNullList) { %>
+	        	if (<%- toNullList[toNullIndex] %> && <%- toNullList[toNullIndex] %> != null) {
+		    		<%- toNullList[toNullIndex] %> = null;
+		    	}
+	    	<% } %>
+	    	<% for (var toCallCloseIndex in toCalltoNullList) { %>
+	        	if (<%- toCalltoNullList[toCallCloseIndex] %> && <%- toCalltoNullList[toCallCloseIndex] %> != null && <%- toCalltoNullList[toCallCloseIndex] %>.close) {
+		    		<%- toCalltoNullList[toCallCloseIndex] %>.close();
+		    	}
+	    	<% } %>
+	    	//execute unbindings
+	    	<% for (var closeIndex in closeBind) { %>
+	    		if (this.model) {
+	    			<%- closeBind[closeIndex] %>
+	    		}
+	    	<% } %>
+	    }
+	});
+
+<% } else { %>		
+	<% var template = fs.readFileSync('Resources/template/ui/windowTemplate.ejs', 'utf8');
+	var windowResult = ejs.render(template, {isRequired : false, className : tab.className, classId : tab.id, baseView : baseView, parentName : baseView+'.tab'+tab.tabIndex , window : tab.window, moduleName : moduleName, mainWindowName : mainWindowName, isTabWindow : true, ejs : ejs, fs : fs}); %>
+	<%- windowResult %>	
+
+	//create params
+    <% if (! (tab.params)) {
+    	tab.params = {};
+    } %>
+
+    //params modif
+    <% tab.params.window = {
+		type: "directValue",
+		valueType: "Direct", 
+		value: baseView + "." + tab.window.name
+	}; %>
+	<% tab.params.title = tab.title; %>
+
+	this.tab<%- tab.tabIndex %> = Titanium.UI.createTab(
+	
+	<% var template = fs.readFileSync('Resources/template/paramsTemplate.ejs', 'utf8');
+	var paramsResult = ejs.render(template, {params : tab.params, className : tab.className, classId : tab.id, moduleName : moduleName, parentName : baseView + ".tab" + tab.tabIndex, baseView : 'this' + tab.name, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+	<%- paramsResult %>
+
+	var tab<%- tab.tabIndex %>Close = function () {
+		<%- baseView %>.tab<%- tab.tabIndex %>.removeEventListener('close', tab<%- tab.tabIndex %>Close);		
+		//<%- baseView %>.tab<%- tab.tabIndex %>.window.close();
+		<%- baseView %>.tab<%- tab.tabIndex %>.window.fireEvent('close');
+		tab<%- tab.tabIndex %>Close = null;
+	};
+
+	<%- baseView %>.tab<%- tab.tabIndex %>.addEventListener('close', tab<%- tab.tabIndex %>Close);
+
+	<% if (tab.icon) { %>
+		SMapp.loadFile(SMapp.<%- moduleName %>.app.appDirectory, SMapp.appsUrl + '/' + SMapp.<%- moduleName %>.app.id + '<%- tab.icon.value %>', <%- baseView %>.tab<%- tab.tabIndex %>, 'icon');
+	<% } %>
+
+	this.<%- parentName %>.addTab(<%- baseView %>.tab<%- tab.tabIndex %>);
+
+	this.<%- parentName %>.currentTab = <%- baseView %>.tab<%- tab.tabIndex %>;
+	this.<%- parentName %>.setActiveTab(<%- baseView %>.tab<%- tab.tabIndex %>);
+
+<% } %>

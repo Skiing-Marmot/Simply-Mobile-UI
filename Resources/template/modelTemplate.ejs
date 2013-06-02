@@ -1,0 +1,44 @@
+/*
+Simply Mobile - Mobile Development Framework
+Copyright (c) 2012 Model N, Jérôme Ueberschlag, Clémence Aucagne, Jean-Baptiste Pringuey
+
+See the file license.txt for copying permission.
+*/
+
+
+//model and collection definition
+<% for (var modelIndex in module.models) { %>
+	//create model
+	<% if (module.models[modelIndex].isDeepModel && module.models[modelIndex].isDeepModel == true ) { %>
+		SMapp.<%= module.moduleName %>.<%- module.models[modelIndex].name %> = Backbone.DeepModel.extend({
+	<% } else { %>
+		SMapp.<%= module.moduleName %>.<%- module.models[modelIndex].name %> = Backbone.Model.extend({
+	<% } %>
+		initialize: function () {
+			this.collection = SMapp.<%= module.moduleName %>.<%- module.models[modelIndex].collection %>Collection;
+			//custom binding
+			<% for (var functionIndex in module.models[modelIndex].function) { %>
+				<% for (var triggerIndex in module.models[modelIndex].function[functionIndex].triggerChange) { %>
+					this.bind("change:<%- module.models[modelIndex].function[functionIndex].triggerChange[triggerIndex] %>", this.<%- module.models[modelIndex].function[functionIndex].name %>, this);
+				<% } %>
+				this.<%- module.models[modelIndex].function[functionIndex].name %>();
+			<% } %>
+			//nested collection
+			<% for (var nestIndex in module.models[modelIndex].nestCollection) { %>
+				this.<%- module.models[modelIndex].nestCollection[nestIndex].collection %>Coll = nestCollection(this, '<%- module.models[modelIndex].nestCollection[nestIndex].attribute %>', new SMapp.<%= module.moduleName %>.<%- module.models[modelIndex].nestCollection[nestIndex].collection %>CollectionConstructor(this.get('<%- module.models[modelIndex].nestCollection[nestIndex].attribute %>')), {removeMissing : true});
+			<% } %>
+		},
+		//custom binding
+		<% for (var functionIndex in module.models[modelIndex].function) { %>
+			<%- module.models[modelIndex].function[functionIndex].name %> : function() {
+				<% var tempRegExp = new RegExp("thisEl", "g"); %>
+				<%- module.models[modelIndex].function[functionIndex].functionContent.replace(tempRegExp, "this") %>
+				<% tempRegExp = null; %>
+			},
+		<% } %>
+		<% if (module.models[modelIndex].idAttribute) { %>
+			idAttribute : "<%- module.models[modelIndex].idAttribute %>",
+		<% } %>
+		storeName: '<%- module.models[modelIndex].name %>'
+	});
+<% } %>

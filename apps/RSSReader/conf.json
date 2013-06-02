@@ -1,0 +1,671 @@
+{	"moduleName" : "RSSReader",
+	"autoRefresh" : true,
+	"refreshTime" : "60000",
+	"models" : [
+		{
+			"name" : "RSSfeed",
+			"isDeepModel" : true,
+			"collection" : "RSSfeeds",
+			"idAttribute" : "title",
+			"function" : [
+			],
+			"nestCollection" : [
+			]
+		},
+		{
+			"name" : "RSSSource",
+			"isDeepModel" : true,
+			"collection" : "RSSSources",
+			"idAttribute" : "id",
+			"function" : [
+			],
+			"nestCollection" : [
+			]
+		}
+	],
+	"collections" : [
+		{
+			"name" : "RSSfeeds",
+			"fetch" : true,
+			"idAttribute" : "title",
+			"model" : "RSSfeed",
+			"url" : "https://modeln-serverdev.herokuapp.com/rss"
+		},
+		{
+			"name" : "RSSSources",
+			"fetch" : true,
+			"idAttribute" : "id",
+			"model" : "RSSSource",
+			"url" : "https://modeln-serverdev.herokuapp.com/rssSources"
+		}
+	],
+	"require" : [
+		
+	],
+	"views" : [ 
+		{
+			"name": "HomeWindow",
+			"constructorType" : "Window",
+			"model" : "RSSfeeds",
+			"rightNavButton" : {
+				"name": "ParamsButton",
+				"constructorType": "Button",
+				"params": {
+					"title" : {
+						"type" : "directValue",
+						"valueType": "String", 
+						"value" : "Params"
+					}
+				},
+				"children": [
+				],
+				"eventListener" : [
+					{
+						"event" : "click",
+						"action" : {
+							"actionType" : "openWindow",
+							"actionValue" : "ParamsWindow"
+						}
+					}
+				]
+			},
+			"params": {
+				"title": {
+					"type": "directValue",
+					"valueType": "String", 
+					"value": "Home"
+				},
+				"layout": {
+					"type": "directValue",
+					"valueType": "String", 
+					"value": "vertical"
+				}
+			},
+			"children": [
+				{
+					"name": "RSSTable",
+					"params" : {},
+					"constructorType": "TableView",
+					"item": "rssfeed"
+				}
+			]
+		},
+		{
+			"name": "ParamsWindow",
+			"constructorType" : "Window",
+			"model" : "RSSSources",
+			"params": {
+				"title": {
+					"type": "directValue",
+					"valueType": "String", 
+					"value": "Feed sources"
+				},
+				"layout": {
+					"type": "directValue",
+					"valueType": "String", 
+					"value": "vertical"
+				}
+			},
+			"children": [		
+				{
+					"name": "NewSourceView",
+					"constructorType" : "View",
+					"params" : {
+						"height": {
+							"type": "directValue",
+							"valueType": "String",
+							"value": "100%"
+						},
+						"layout": {
+							"type": "directValue",
+							"valueType": "String",
+							"value": "vertical"
+						}
+					},					
+					"children": [
+						{
+							"name": "NewFeedNameView",
+							"constructorType" : "View",
+							"params" : {
+								"layout": {
+									"type": "directValue",
+									"valueType": "String",
+									"value": "horizontal"
+								},
+								"height": {
+									"type": "directValue",
+									"valueType": "Direct",
+									"value": "Titanium.UI.SIZE"
+								}
+							},					
+							"children": [
+								{
+									"name": "NewFeedNameLabel",
+									"constructorType": "Label",
+									"params": {
+										"text": {
+											"type": "directValue",
+											"valueType": "String",
+											"value": "Name: "
+										}
+									},
+									"children": [
+									]
+								},
+								{
+									"name": "NewFeedNameTextField",
+									"constructorType": "TextField",
+									"params": {
+										"hintText": {
+											"type": "directValue",
+											"valueType": "String",
+											"value": "Name"
+										}
+									},
+									"children": [
+									],
+									"newModel" : [
+										{
+											"modelAttribute" : "name",
+											"objectAttribute" : "value"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "NewFeedHostView",
+							"constructorType" : "View",
+							"params" : {
+								"layout": {
+									"type": "directValue",
+									"valueType": "String",
+									"value": "horizontal"
+								},
+								"height": {
+									"type": "directValue",
+									"valueType": "Direct",
+									"value": "Titanium.UI.SIZE"
+								}
+							},					
+							"children": [
+								{
+									"name": "NewFeedHostLabel",
+									"constructorType": "Label",
+									"params": {
+										"text": {
+											"type": "directValue",
+											"valueType": "String",
+											"value": "Host: "
+										}
+									},
+									"children": [
+									]
+								},
+								{
+									"name": "NewFeedHostTextField",
+									"constructorType": "TextField",
+									"params": {
+										"hintText": {
+											"type": "directValue",
+											"valueType": "String",
+											"value": "Host"
+										}
+									},
+									"children": [
+									],
+									"newModel" : [
+										{
+											"modelAttribute" : "host",
+											"objectAttribute" : "value"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "NewFeedPathView",
+							"constructorType" : "View",
+							"params" : {
+								"layout": {
+									"type": "directValue",
+									"valueType": "String",
+									"value": "horizontal"
+								},
+								"height": {
+									"type": "directValue",
+									"valueType": "Direct",
+									"value": "Titanium.UI.SIZE"
+								}
+							},					
+							"children": [
+								{
+									"name": "NewFeedPathLabel",
+									"constructorType": "Label",
+									"params": {
+										"text": {
+											"type": "directValue",
+											"valueType": "String",
+											"value": "Path: "
+										}
+									},
+									"children": [
+									]
+								},
+								{
+									"name": "NewFeedPathTextField",
+									"constructorType": "TextField",
+									"params": {
+										"hintText": {
+											"type": "directValue",
+											"valueType": "String",
+											"value": "Path"
+										}
+									},
+									"children": [
+									],
+									"newModel" : [
+										{
+											"modelAttribute" : "path",
+											"objectAttribute" : "value"
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "AddButton",
+							"constructorType": "Button",
+							"params": {
+								"title" : {
+									"type" : "directValue",
+									"valueType": "String", 
+									"value" : "Add source"
+								}
+							},
+							"children": [
+							],
+							"eventListener" : [
+								{
+									"event" : "click",
+									"action" : {
+										"actionType" : "newModel"
+									}
+								}
+							]
+						},
+						{
+							"name": "RSSSourceTableView",
+							"constructorType": "TableView",
+							"params" : {
+								"height": {
+									"type": "directValue",
+									"valueType": "Direct",
+									"value": "Titanium.UI.FILL"
+								}
+							},
+							"item": "rssSource"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "rssSource",
+			"constructorType": "TableViewItem",
+			"params": {
+				"width" : {
+					"type" : "directValue",
+					"valueType": "String", 
+					"value" : "100%"
+				},
+				"layout" : {
+					"type" : "directValue",
+					"valueType": "String", 
+					"value" : "vertical"
+				},
+				"height": {
+					"type": "directValue",
+					"valueType": "Direct",
+					"value": "Titanium.UI.SIZE"
+				}
+			},
+			"children": [
+				{
+					"name": "SourceViewName",
+					"constructorType": "View",
+					"params": {
+						"layout" : {
+							"type" : "directValue",
+							"valueType": "String", 
+							"value" : "horizontal"
+						}
+					},
+					"children": [
+						{
+							"name": "SourceNameLabel",
+							"constructorType": "Label",
+							"params": {
+								"width": {
+									"type": "directValue",
+									"valueType": "String",
+									"value": "20%"
+								},
+								"text": {
+									"type": "directValue",
+									"valueType": "String",
+									"value": "Name: "
+								}
+							},
+							"children": [
+							]
+						},
+						{
+							"name": "FeedTitleLabel",
+							"constructorType": "Label",
+							"params": {
+								"text" : {
+									"type" : "attributeValue",
+									"valueType": "String", 
+									"value" : "name"
+								}
+							},
+							"children": [
+							]
+						}
+					]
+				},
+				{
+					"name": "SourceViewHost",
+					"constructorType": "View",
+					"params": {
+						"layout" : {
+							"type" : "directValue",
+							"valueType": "String", 
+							"value" : "horizontal"
+						}
+					},
+					"children": [
+						{
+							"name": "SourceHostLabel",
+							"constructorType": "Label",
+							"params": {
+								"width": {
+									"type": "directValue",
+									"valueType": "String",
+									"value": "20%"
+								},
+								"text": {
+									"type": "directValue",
+									"valueType": "String",
+									"value": "Host: "
+								}
+							},
+							"children": [
+							]
+						},
+						{
+							"name": "FeedHostTextField",
+							"constructorType": "TextField",
+							"params": {
+								"width": {
+									"type": "directValue",
+									"valueType": "String",
+									"value": "75%"
+								},
+								"value" : {
+									"type" : "attributeValue",
+									"valueType": "String", 
+									"value" : "host"
+								}
+							},
+							"children": [
+							]
+						}
+					]
+				},
+				{
+					"name": "SourceViewPath",
+					"constructorType": "View",
+					"params": {
+						"layout" : {
+							"type" : "directValue",
+							"valueType": "String", 
+							"value" : "horizontal"
+						}
+					},
+					"children": [
+						{
+							"name": "SourceNameLabel",
+							"constructorType": "Label",
+							"params": {
+								"width": {
+									"type": "directValue",
+									"valueType": "String",
+									"value": "20%"
+								},
+								"text": {
+									"type": "directValue",
+									"valueType": "String",
+									"value": "Path: "
+								}
+							},
+							"children": [
+							]
+						},
+						{
+							"name": "FeedPathTextField",
+							"constructorType": "TextField",
+							"params": {
+								"width": {
+									"type": "directValue",
+									"valueType": "String",
+									"value": "75%"
+								},
+								"value" : {
+									"type" : "attributeValue",
+									"valueType": "String", 
+									"value" : "path"
+								}
+							},
+							"children": [
+							]
+						}
+					]
+				},
+				{
+					"name": "SourceButtonView",
+					"constructorType": "View",
+					"params": {
+						"layout" : {
+							"type" : "directValue",
+							"valueType": "String", 
+							"value" : "horizontal"
+						}
+					},
+					"children": [
+						{
+							"name": "SaveButton",
+							"constructorType": "Button",
+							"params": {
+								"title" : {
+									"type" : "directValue",
+									"valueType": "String", 
+									"value" : "Save changes"
+								}
+							},
+							"children": [
+							],
+							"eventListener" : [
+								{
+									"event" : "click",
+									"action" : {
+										"actionType" : "updateModel"
+									}
+								}
+							]
+						},
+						{
+							"name": "DeleteButton",
+							"constructorType": "Button",
+							"params": {
+								"title" : {
+									"type" : "directValue",
+									"valueType": "String", 
+									"value" : "Delete source"
+								}
+							},
+							"children": [
+							],
+							"eventListener" : [
+								{
+									"event" : "click",
+									"action" : {
+										"actionType" : "deleteModel"
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "FeedWindow",
+			"constructorType" : "Window",
+			"params": {
+				"title": {
+					"type": "directValue",
+					"valueType": "String", 
+					"value": "Feed details"
+				},
+				"layout": {
+					"type": "directValue",
+					"valueType": "String", 
+					"value": "vertical"
+				}
+			},
+			"children": [
+				{
+					"name": "FeedTitleLabel",
+					"constructorType": "Label",
+					"params": {
+						"text" : {
+							"type" : "attributeValue",
+							"valueType": "String", 
+							"value" : "title"
+						}
+					},
+					"children": [
+					]
+				},
+				{
+					"name": "FeedLinkLabel",
+					"constructorType": "Label",
+					"params": {
+						"text" : {
+							"type" : "directValue",
+							"valueType": "String", 
+							"value" : "Show in browser"
+						}
+					},
+					"children": [
+					],
+					"eventListener" : [
+						{
+							"event" : "click",
+							"action" : {
+								"actionType" : "execute",
+								"executeValue" : "Titanium.Platform.openURL(thisModel.get('link'));"
+							}
+						}
+					]
+				},
+				{
+					"name": "PubDateLabel",
+					"constructorType": "Label",
+					"params": {
+						"text" : {
+							"type" : "attributeValue",
+							"valueType": "String", 
+							"value" : "pubDate"
+						}
+					},
+					"children": [
+					]
+				},
+				{
+					"name": "DescriptionWebView",
+					"constructorType": "WebView",
+					"params": {
+						"html" : {
+							"type" : "attributeValue",
+							"valueType": "String", 
+							"value" : "description"
+						}
+					},
+					"children": [
+					]
+				}
+			]
+		},
+		{
+			"name": "rssfeed",
+			"constructorType": "TableViewItem",
+			"params": {
+				"width" : {
+					"type" : "directValue",
+					"valueType": "String", 
+					"value" : "100%"
+				},
+				"layout" : {
+					"type" : "directValue",
+					"valueType": "String", 
+					"value" : "vertical"
+				},
+				"height": {
+					"type": "directValue",
+					"valueType": "Direct",
+					"value": "Titanium.UI.SIZE"
+				}
+			},
+			"eventListener" : [
+				{
+					"event" : "click",
+					"action" : {
+						"actionType" : "openWindow",
+						"actionValue" : "FeedWindow"
+					}
+				}
+			],
+			"children": [
+				{
+					"name": "FeedTitleLabel",
+					"constructorType": "Label",
+					"params": {
+						"text" : {
+							"type" : "attributeValue",
+							"valueType": "String", 
+							"value" : "title"
+						}
+					},
+					"children": [
+					]
+				},
+				{
+					"name": "PubDateLabel",
+					"constructorType": "Label",
+					"params": {
+						"text" : {
+							"type" : "attributeValue",
+							"valueType": "String", 
+							"value" : "pubDate"
+						}
+					},
+					"children": [
+					]
+				}
+			]
+		}
+	]
+}

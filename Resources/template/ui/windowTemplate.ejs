@@ -1,0 +1,253 @@
+/*
+Simply Mobile - Mobile Development Framework
+Copyright (c) 2012 Model N, Jérôme Ueberschlag, Clémence Aucagne, Jean-Baptiste Pringuey
+
+See the file license.txt for copying permission.
+*/
+
+
+//create the backbone view
+var <%- moduleName %><%- window.name %> = Backbone.View.extend({
+
+	//list to create the close function
+	<% var toNullList = []; %>
+	<% var toCallCloseList = []; %>
+	<% var closeBind = []; %>
+
+	_modelBinder: undefined,
+	newModel: [],
+	    
+    initialize: function() {
+        _.bindAll(this);
+
+        <% if (window.model) { %>
+        	this.model = SMapp.<%= moduleName %>.<%- window.model %>Collection.at(0);
+	        this.collection = SMapp.<%= moduleName %>.<%- window.model %>Collection;
+        <% } else if (window.nestCollection) { %>
+	        this.collection = this.model.<%- window.nestCollection %>Coll;
+        	this.model = this.collection.at(0);
+        <% } %>
+        if (this.model) {
+        	this._modelBinder = new Backbone.ModelBinder();
+        	this.model.bind("destroy", this.close, this);
+    	} 
+
+        <% closeBind.push('this.model.unbind("destroy", this.close);'); %>
+        //alias for this
+        var this<%- window.name %> = this;
+        //biding list
+        this.toBind = [];
+
+        //create the window
+		<% if (isTabWindow == false) { %>
+        	this<%- window.name %>.<%- window.name %> = Titanium.UI.createWindow(
+        	<% var newParentName = 'this'+window.name+'.'+window.name; %>
+        	<% var newBaseView = 'this'+window.name; %>
+			<% toNullList.push('this.' + window.name); %>
+			<% toCallCloseList.push('this.' + window.name); %>
+		<% } else { %>
+        	this.<%- window.name %> = Titanium.UI.createWindow(
+			<% toNullList.push('this.' + window.name); %>
+			<% toCallCloseList.push('this.' + window.name); %>
+        	<% var newParentName = 'this' + window.name + '.'+ window.name; %>
+        	<% var newBaseView = 'this' + window.name; %>
+		<% } %>
+		<% var template = fs.readFileSync('Resources/template/paramsTemplate.ejs', 'utf8');
+		var paramsResult = ejs.render(template, {baseView : newBaseView, className : window.className, classId : window.id, params : window.params, moduleName : moduleName, parentName : newParentName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+		<%- paramsResult %>
+
+		<% if (isTabWindow == false) { %>
+			<% var template = fs.readFileSync('Resources/template/ui/logoutBar.ejs', 'utf8'); %>
+			<% var tempLogoutBar = ejs.render(template, {base : 'this'+ window.name, baseWindow : 'this'+ window.name +'.'+window.name, moduleName : moduleName, windowName : window.name, windowTitleType : window.params.title.type, windowTitle : window.params.title.value, rightNavButton : window.rightNavButton, leftNavButton : window.leftNavButton, toNullList : toNullList, baseToNullList : 'this.'+ window.name, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+			<%- tempLogoutBar %>
+			<% var parentView = 'this'+ window.name +'.'+ window.name ; 
+			var newBaseView = 'this'+window.name; %>
+		<% } else { %>
+			//hide NavBar cause of iPhone
+			this.<%- window.name %>.navBarHidden = true;
+			//if window in a tab then create an intermediate view to put logout bar at the bottom
+			this.<%- window.name %>mainView = Titanium.UI.createView({layout : 'vertical'});
+			this.<%- window.name %>mainView.bottom = SMapp.buttonSize;
+
+			this.<%- window.name %>.add(this.<%- window.name %>mainView);
+
+			<% toNullList.push('this.'+ window.name + 'mainView'); %>
+
+			<% var parentView = 'this' + window.name + '.' + window.name +'mainView'; 
+			var newBaseView = 'this'+window.name; %>
+		<% } %>
+
+
+
+		//ceate the children views
+		<% for (indexChild in window.children) { %>
+			//include
+			<% if (window.children[indexChild].require) { %>
+				<% var includedFile = fs.readFileSync('Resources/'+ window.children[indexChild].require);
+				var parsedIncludedFile = JSON.parse(includedFile);
+				var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+				var childResult = ejs.render(template, {isRequired : false, baseView : newBaseView, parentName : parentView, view : parsedIncludedFile, parentCondition : window.conditionChild, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+				<%- childResult %>
+			//list to create the close function
+			<% } else if (typeof window.children[indexChild] == "string") { %>
+				var param = {};
+				if (this.model) {
+					param.model = this.model;
+				}
+				if (this.collection) {
+					param.collection = this.collection;
+				}
+				<% if (isTabWindow == true) { %>
+					<% toNullList.push('this.'+ window.children[indexChild]); %>
+					this<%- window.name %>.<%- window.children[indexChild] %> = new <%- moduleName %><%- window.children[indexChild] %>(param).render().<%- window.children[indexChild] %>;
+					if (this<%- window.name %>.<%- window.children[indexChild] %>) {
+						this<%- window.name %>.<%- window.name %>mainView.add(this<%- window.name %>.<%- window.children[indexChild] %>);
+					}
+					<% toCallCloseList.push('this.' + window.children[indexChild]); %>
+				<% } else { %>
+					<% toNullList.push('this.'+ window.children[indexChild]); %>
+					this<%- window.name %>.<%- window.children[indexChild] %> = new <%- moduleName %><%- window.children[indexChild] %>(param).render().<%- window.children[indexChild] %>;
+					if (this<%- window.name %>.<%- window.children[indexChild] %>) {
+						this<%- window.name %>.<%- window.name %>.add(this<%- window.name %>.<%- window.children[indexChild] %>);
+					}
+					<% toCallCloseList.push('this' + window.name + '.' + window.children[indexChild]); %>
+				<% } %>
+
+			<% } else { %>
+				<% toNullList.push('this.'+ window.children[indexChild].name); %>
+				<% var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+				var childResult = ejs.render(template, {isRequired : false, baseView : newBaseView, parentName : parentView, view : window.children[indexChild], indexChild : indexChild, parentCondition : window.conditionChild, moduleName : moduleName, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+				<%- childResult %>
+			<% } %>
+		<% } %>
+
+		//logout handler
+		var <%- moduleName %><%- window.name %>Logout = function() {
+				SMapp.os({
+					def : function() {
+						SMapp.navgroup.close(<%- newParentName %>);
+					},
+					android : function() {
+						if (<%- newParentName %>) {
+							<%- newParentName %>.close();
+						}
+					}
+				});
+				SMapp.utils.destroy(<%- newParentName %>);
+				this<%- window.name %>.close();
+		};
+		Ti.App.addEventListener('logout', <%- moduleName %><%- window.name %>Logout);
+
+		var <%- moduleName %><%- window.name %>Close = function(e) {
+			<%- newParentName %>.close();
+		};
+		<%- newParentName %>.addEventListener('android:back', <%- moduleName %><%- window.name %>Close);	
+		
+		var <%- moduleName %><%- window.name %>LogoutClose = function () {
+			if (<%- moduleName %><%- window.name %>Logout && <%- moduleName %><%- window.name %>Logout != null) {
+				Ti.API.info('remove <%- moduleName %><%- window.name %>Logout');
+				Ti.App.removeEventListener('logout', <%- moduleName %><%- window.name %>Logout);	
+			}
+			if (<%- moduleName %><%- window.name %>Close && <%- moduleName %><%- window.name %>Close != null) {
+				Ti.API.info('remove <%- moduleName %><%- window.name %>Close');
+				Ti.App.removeEventListener('android:back', <%- moduleName %><%- window.name %>Close);				
+			}
+			<%- moduleName %><%- window.name %>Logout = null;
+			<%- moduleName %><%- window.name %>LogoutClose = null;
+			<%- moduleName %><%- window.name %>Close = null;
+		};		
+		<%- newParentName %>.addEventListener('close', <%- moduleName %><%- window.name %>LogoutClose);
+
+		//if window in a tab then put the logout bar at the bottom and add eventListener to close the tabGroup
+		<% if (isTabWindow == true) { %>
+			<% var template = fs.readFileSync('Resources/template/ui/logoutBar.ejs', 'utf8'); %>
+			<% var tempLogoutBar = ejs.render(template, {base : 'this'+ window.name, baseWindow : 'this'+ window.name+'.'+window.name, moduleName : moduleName, windowName : window.name, windowTitleType : window.params.title.type, windowTitle : window.params.title.value, rightNavButton : window.rightNavButton, leftNavButton : window.leftNavButton, toNullList : toNullList, baseToNullList : 'this.'+ window.name, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+			<%- tempLogoutBar %>
+		<% } %>
+
+		//eventListener
+		<% for (indexEvent in window.eventListener) {
+			var currentEvent = window.eventListener[indexEvent]; %>
+
+			<% var template = fs.readFileSync('Resources/template/eventTemplate.ejs', 'utf8');
+			var eventsResult = ejs.render(template, {event : currentEvent.event, action : currentEvent.action, moduleName : moduleName, parentName : 'this'+ window.name +'.'+ window.name, mainWindowName : mainWindowName, ejs : ejs, fs : fs}); %>
+			<%- eventsResult %>
+
+		<% } %>
+
+		//close eventListener
+		this.<%- window.name %>.addEventListener("close", this.close);
+
+        return this.<%- window.name %>;
+    },
+
+    close : function () {  	
+    	//close of window
+
+    	if (this._modelBinder) {
+    		this._modelBinder.unbind();
+    	}
+
+    	if (this.collectionBinder) {
+    		this.collectionBinder.unbind();
+    	} 	
+
+    	<% for (var toCallCloseIndex in toCallCloseList) { %>
+    		if (<%- toCallCloseList[toCallCloseIndex] %>) {
+	    		<%- toCallCloseList[toCallCloseIndex] %>.close();
+	    	}
+    	<% } %>
+
+    	<% for (var toNullIndex in toNullList) { %>
+        	if (<%- toNullList[toNullIndex] %> && <%- toNullList[toNullIndex] %> != null) {
+				SMapp.utils.destroy(<%- toNullList[toNullIndex] %>);
+	    	}
+    	<% } %>
+    	<% for (var closeIndex in closeBind) { %>
+    		if (this.model) {
+    			<%- closeBind[closeIndex] %>
+    		}
+    	<% } %>
+    },
+
+    destroy: function () {
+    	if (this.model) {
+    		this.model.destroy();
+    	}
+    },
+
+    render: function(eventName) {
+    	if (this._modelBinder) {
+	    	//for loop on this.toBind
+	    	var bindings = {};
+	    	for (var bindingIndex in this.toBind) {
+	    		var currentToBind = this.toBind[bindingIndex];
+				if (!bindings[currentToBind.attribute]) {
+	    			bindings[currentToBind.attribute] = [];
+	    		}
+	    		bindings[currentToBind.attribute].push(currentToBind.bind);
+	    	}
+
+	        this._modelBinder.bind(this.model, this.<%- window.name %>, bindings);
+	        //unreference
+	        this.toBind = null;
+	    }
+        return this;
+    }
+
+});
+
+// If this window is in a tab then create the backbone view and render it
+<% if (isTabWindow  && isTabWindow == true) { %>
+	var param = {};
+	if (this.model) {
+		param.model = this.model;
+	}
+	if (this.collection) {
+		param.collection = this.collection;
+	}
+	this.<%- window.name %> = new <%- moduleName %><%- window.name %>(param).render().<%- window.name %>;
+
+	<%- moduleName %><%- window.name %> = null;
+
+<% } %>

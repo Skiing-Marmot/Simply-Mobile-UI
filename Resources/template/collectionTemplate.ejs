@@ -1,0 +1,145 @@
+/*
+Simply Mobile - Mobile Development Framework
+Copyright (c) 2012 Model N, Jérôme Ueberschlag, Clémence Aucagne, Jean-Baptiste Pringuey
+
+See the file license.txt for copying permission.
+*/
+
+
+//collection template
+<% for (var collectionIndex in module.collections) { %>
+
+	//create collection
+	SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].name %>CollectionConstructor = Backbone.Collection.extend({
+		//initialize function : create eventListener for creation, updating and deletion of model in the collection
+		initialize : function() {
+			Ti.App.addEventListener('new<%- module.collections[collectionIndex].name %>', this.onNew);
+			Ti.App.addEventListener('update<%- module.collections[collectionIndex].name %>', this.onUpdate);
+			Ti.App.addEventListener('delete<%- module.collections[collectionIndex].name %>', this.onDelete);
+			Ti.App.addEventListener('refreshAll', this.onRefreshAll);
+
+			var thisAlias = this;
+
+			var removeEvent = function () {
+				Ti.App.removeEventListener('new<%- module.collections[collectionIndex].name %>', thisAlias.onNew);
+				Ti.App.removeEventListener('update<%- module.collections[collectionIndex].name %>', thisAlias.onUpdate);
+				Ti.App.removeEventListener('delete<%- module.collections[collectionIndex].name %>', thisAlias.onDelete);
+				Ti.App.removeEventListener('refreshAll', thisAlias.onRefreshAll);
+				Ti.App.removeEventListener("logout", removeEvent);
+			};
+
+			Ti.App.addEventListener("logout", removeEvent);
+		},
+
+		onNew : function(entry) {
+			var toModel = entry.model;
+			var thisCol = SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].name %>Collection;
+			var realModel = thisCol.create(toModel);			
+		},
+
+		onUpdate : function(entry) {
+			entry.model.save();
+		},
+
+		onDelete : function(entry) {
+			entry.model.destroy();
+		},
+
+		onRefreshAll : function() {
+			if (SMapp.spinnerWindow) {
+				SMapp.spinnerWindow.show();
+			}
+			SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].name %>Collection.fetch({update : true, removeMissing : true,
+			 success : function(coll) {   
+				if (SMapp.spinnerWindow) {
+					SMapp.spinnerWindow.hide();
+				}
+	        },
+	       	error : function(coll) {
+				if (SMapp.spinnerWindow) {
+					SMapp.spinnerWindow.hide();
+				}
+	        }});
+		},
+
+		//idAttribute
+		<% if (module.collections[collectionIndex].idAttribute) { %>
+			idAttribute : "<%- module.collections[collectionIndex].idAttribute %>",
+		<% } %>
+
+		//only one model
+		<% if (typeof module.collections[collectionIndex].model == 'string') { %>
+			model: SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].model %>,
+		<% } else { %>
+		//more than one model
+			model: function (attrs, options) {
+					switch (attrs.<%- module.collections[collectionIndex].model.typeAttribute %>) {
+						<% for (var modelIndex in module.collections[collectionIndex].model.list) { %>
+							case '<%- module.collections[collectionIndex].model.list[modelIndex][module.collections[collectionIndex].model.typeAttribute] %>' : return new SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].model.list[modelIndex].modelName %>(attrs, options);
+						<% } %>
+						<% if (module.collections[collectionIndex].defaultModel) { %>
+							default : return new SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].defaultModel %>(attrs, options);
+						<% } %>
+					}
+				},
+		<% } %>
+		//url
+		<% if (module.collections[collectionIndex].url) { %>
+			url : '<%- module.collections[collectionIndex].url %>',
+		<% } %>
+		//storeName
+		storeName : '<%- module.collections[collectionIndex].name %>'
+		<% if (module.collections[collectionIndex].directory) { %>
+			,
+			directory : <%-  module.collections[collectionIndex].directory %>
+		<% } %>
+		<% if (module.collections[collectionIndex].encryption) { %>
+			,
+			encryption : { key : <%-  module.collections[collectionIndex].encryption %>}
+		<% } %>
+	});
+
+	SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].name %>Collection = new SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].name %>CollectionConstructor();
+	
+	//subsets
+	<% if (module.collections[collectionIndex].subset) { %>
+		<% for(var subsetIndex in module.collections[collectionIndex].subset) { %>
+
+			SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].name %><%- module.collections[collectionIndex].subset[subsetIndex].name %>CollectionConstructor = Backbone.Subset.extend({
+				parent : SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].name %>Collection,
+				sieve : function (item) {
+					if (item.<%- module.collections[collectionIndex].subset[subsetIndex].condition %>) {
+						return item.<%- module.collections[collectionIndex].subset[subsetIndex].condition %>();
+					} else {
+						return false;
+					}
+				}
+			});
+
+			SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].name %><%- module.collections[collectionIndex].subset[subsetIndex].name %>Collection = new SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].name %><%- module.collections[collectionIndex].subset[subsetIndex].name %>CollectionConstructor();
+			SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].name %><%- module.collections[collectionIndex].subset[subsetIndex].name %>Collection.liveupdate_keys = 'all';
+			
+		<% } %>
+	<% } %>
+
+
+	//first fetch
+	<% if (module.collections[collectionIndex].fetch && module.collections[collectionIndex].fetch == true) { %>
+		if (SMapp.spinnerWindow) {
+			SMapp.spinnerWindow.show();
+		}
+		SMapp.<%= module.moduleName %>.<%- module.collections[collectionIndex].name %>Collection.fetch({
+			success : function(coll) {
+				if (SMapp.spinnerWindow) {
+					SMapp.spinnerWindow.hide();
+				}
+	        },
+	       error : function(coll) {
+				if (SMapp.spinnerWindow) {
+					SMapp.spinnerWindow.hide();
+				}
+	        }
+		});	    
+	<% } %>
+
+<% } %>

@@ -1,0 +1,49 @@
+/*
+Simply Mobile - Mobile Development Framework
+Copyright (c) 2012 Model N, Jérôme Ueberschlag, Clémence Aucagne, Jean-Baptiste Pringuey
+
+See the file license.txt for copying permission.
+*/
+
+
+<% if (require.type =='package') { %>
+	//if we are requiring a package
+	<% for (var requireIndex in require.files) { %>
+		<% var requiredFile = fs.readFileSync('apps/' + moduleName + '/' + require.files[requireIndex]);
+		var parsedIncludedFile = JSON.parse(requiredFile); 
+		var template = fs.readFileSync('Resources/template/requireTemplate.ejs', 'utf8');
+		var requireResult = ejs.render(template, {requireFiles : requireFiles, package : require.name, moduleName : moduleName, mainWindowName : mainWindowName, require : parsedIncludedFile, ejs : ejs, fs : fs}); %>
+		<%- requireResult %>
+	<% } %> 	
+
+<% } else { %>
+	//change the name if it is part of a package
+	<% if (package) {
+		require.name = package + '_' + require.name;
+	} %>
+
+	//dependencies
+	<% for (var dependenciesIndex in require.dependencies) { %>
+		<% var requiredFile = fs.readFileSync('apps/' + moduleName + '/' + require.dependencies[dependenciesIndex]);
+		var parsedIncludedFile = JSON.parse(requiredFile); 
+		var template = fs.readFileSync('Resources/template/requireTemplate.ejs', 'utf8');
+		var requireResult = ejs.render(template, {requireFiles : requireFiles, package : package, moduleName : moduleName, mainWindowName : mainWindowName, require : parsedIncludedFile, ejs : ejs, fs : fs}); %>
+		<%- requireResult %>
+	<% } %>
+
+	//if we are requiring a single module
+	<% if ( !(requireFiles.indexOf(require.name) > -1)) { %>
+		<% var isRequired = true;
+		if ( (require.windowType && require.windowType == 'tabGroup')
+				|| (require.windowType)
+				|| (require.constructorType && ((require.constructorType == 'TableViewItem' || require.constructorType == 'ViewItem') || ((require.constructorType == 'TableView' || require.constructorType == 'View' || require.constructorType == "ScrollView") && require.nestCollection) || (require.model)))
+			) { 
+				isRequired = false;
+		} %>
+			<% var template = fs.readFileSync('Resources/template/ui/viewTemplate.ejs', 'utf8');
+			var windowResult = ejs.render(template, {baseView : undefined, isRequired : isRequired, view : require, moduleName : moduleName, mainWindowName : mainWindowName, isTabWindow : false, ejs : ejs, fs : fs}); %>
+			<%- windowResult %>
+		<% requireFiles.push(require.name); %>
+	<% } %>
+
+<% } %>
