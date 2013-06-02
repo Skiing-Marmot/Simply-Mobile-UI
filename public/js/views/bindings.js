@@ -134,9 +134,9 @@ function AttributesConfiguration(view) {
 						$(view.el).css("font-size", value.fontSize);
 						$(view.el).css("font-family", value.font);
 						//return JSON.stringify(value);
-					} /*else {
-						return JSON.parse(value);
-					}*/
+					} else {
+						return JSON.parse(JSON.stringify(value));
+					}
 				}
 			}
 	}
