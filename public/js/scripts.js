@@ -23,22 +23,22 @@ $(function() {
 		},
 		opacity : 0.75, // opacity of the helper
 		snap : "#phone-screen", // Stop the draggable on the limites of the
-								// #phone-screen div
+		// #phone-screen div
 		snapMode : "inner", // Stop the draggable only against the inner limites
-							// of #phone-screen
+		// of #phone-screen
 		revert : "invalid" // Come back to initial place if not dropped
 	});
 	// Make other View types icons draggable
 	$(".inline-component, .view-component").draggable({
 		cancel : null, // All elements are allowed to be dragged (else input
-						// elements can't by default)
+		// elements can't by default)
 		helper : "clone", // What is shown with the pointer when moved
 		opacity : 0.75, // opacity of the helper
 		snap : "#phone-screen, .view-comp, .window-comp", // Stop the
-															// draggable against
-															// the inner limites
-															// of #phone-screen,
-															// windows and views
+		// draggable against
+		// the inner limites
+		// of #phone-screen,
+		// windows and views
 		snapMode : "inner",
 		revert : "invalid" // Come back to initial place if not dropped
 	});
@@ -46,13 +46,13 @@ $(function() {
 	// Make the phone screen droppable
 	$("#phone-screen").droppable({
 		accept : ".window-component, .tabsgroup-component", // Only Windows and
-															// Tabs groups can
-															// be added as root
-															// elements
+		// Tabs groups can
+		// be added as root
+		// elements
 		activeClass : "ui-active", // class to apply when an acceptable
-									// draggable starts to be dragged
+		// draggable starts to be dragged
 		greedy : true, // Prevent event propagation when draggable is dropped
-						// on a child
+		// on a child
 		drop : function(event, ui) {// What to do when a draggable is dropped
 			// Create the Bacbone model for the Window TODO handle tabs group
 			// creation
@@ -87,9 +87,9 @@ var makeViewDroppable = function(_view) {
 	var view = $(_view.el);
 	view.droppable({
 		accept : ".inline-component, .view-component", // It accepts only other
-														// Views and simple
-														// components (no Window
-														// or Tabs group)
+		// Views and simple
+		// components (no Window
+		// or Tabs group)
 		activeClass : "ui-active",
 		greedy : true,
 		drop : function(event, ui) {
@@ -172,9 +172,10 @@ var selectComponent = function(event) {
 
 		// Just display the JSON representation of the model in the #model div
 		// when it changes
-	/*	mod.bind('change', function() {
-			$('#model').html(JSON.stringify(mod.toJSON()));
-		});*/
+		/*
+		 * mod.bind('change', function() {
+		 * $('#model').html(JSON.stringify(mod.toJSON())); });
+		 */
 	} else {
 		// If we only have unselected an element, set the selected variable to
 		// null
@@ -195,244 +196,24 @@ var makeApp = function() {
 	// window.location.href = '/appSrcZip';
 
 	var appDesc = {
-		"applicationNameIcon" : "RSS Reader",
-		"applicationName" : "RSSReader",
-		"target" : [ "iphone", "android", "ipad" ],
-		"manifest" : null,
-		"allowVertical" : true,
-		"allowHorizontal" : true,
-		"baseFile" : "RSSReader"
+		applicationNameIcon : "RSS Reader",
+		applicationName : "RSSReader",
+		target : [ "iphone", "android", "ipad" ],
+		manifest : null,
+		allowVertical : true,
+		allowHorizontal : true,
+		baseFile : "RSSReader"
 	};
 
 	var appConf = {
-		"moduleName" : "RSSReader",
-		"views" : [ {
-			"name" : "HomeWindow",
-			"constructorType" : "Window",
-			"rightNavButton" : {
-				"name" : "ParamsButton",
-				"constructorType" : "Button",
-				"params" : {
-					"title" : {
-						"type" : "directValue",
-						"valueType" : "String",
-						"value" : "Params"
-					}
-				},
-				"children" : [],
-				"eventListener" : [ {
-					"event" : "click",
-					"action" : {
-						"actionType" : "openWindow",
-						"actionValue" : "ParamsWindow"
-					}
-				} ]
-			},
-			"params" : {
-				"title" : {
-					"type" : "directValue",
-					"valueType" : "String",
-					"value" : "Home"
-				},
-				"layout" : {
-					"type" : "directValue",
-					"valueType" : "String",
-					"value" : "vertical"
-				}
-			},
-			"children" : [
-
-			]
-		}, {
-			"name" : "ParamsWindow",
-			"constructorType" : "Window",
-			"params" : {
-				"title" : {
-					"type" : "directValue",
-					"valueType" : "String",
-					"value" : "Feed sources"
-				},
-				"layout" : {
-					"type" : "directValue",
-					"valueType" : "String",
-					"value" : "vertical"
-				}
-			},
-			"children" : [ {
-				"name" : "NewSourceView",
-				"constructorType" : "View",
-				"params" : {
-					"height" : {
-						"type" : "directValue",
-						"valueType" : "String",
-						"value" : "100%"
-					},
-					"layout" : {
-						"type" : "directValue",
-						"valueType" : "String",
-						"value" : "vertical"
-					}
-				},
-				"children" : [ {
-					"name" : "NewFeedNameView",
-					"constructorType" : "View",
-					"params" : {
-						"layout" : {
-							"type" : "directValue",
-							"valueType" : "String",
-							"value" : "horizontal"
-						},
-						"height" : {
-							"type" : "directValue",
-							"valueType" : "Direct",
-							"value" : "Titanium.UI.SIZE"
-						}
-					},
-					"children" : [ {
-						"name" : "NewFeedNameLabel",
-						"constructorType" : "Label",
-						"params" : {
-							"text" : {
-								"type" : "directValue",
-								"valueType" : "String",
-								"value" : "Name: "
-							}
-						},
-						"children" : []
-					}, {
-						"name" : "NewFeedNameTextField",
-						"constructorType" : "TextField",
-						"params" : {
-							"hintText" : {
-								"type" : "directValue",
-								"valueType" : "String",
-								"value" : "Name"
-							}
-						}
-					} ]
-				}, {
-					"name" : "NewFeedHostView",
-					"constructorType" : "View",
-					"params" : {
-						"layout" : {
-							"type" : "directValue",
-							"valueType" : "String",
-							"value" : "horizontal"
-						},
-						"height" : {
-							"type" : "directValue",
-							"valueType" : "Direct",
-							"value" : "Titanium.UI.SIZE"
-						}
-					},
-					"children" : [ {
-						"name" : "NewFeedHostLabel",
-						"constructorType" : "Label",
-						"params" : {
-							"text" : {
-								"type" : "directValue",
-								"valueType" : "String",
-								"value" : "Host: "
-							}
-						},
-						"children" : []
-					}, {
-						"name" : "NewFeedHostTextField",
-						"constructorType" : "TextField",
-						"params" : {
-							"hintText" : {
-								"type" : "directValue",
-								"valueType" : "String",
-								"value" : "Host"
-							}
-						}
-					} ]
-				}, {
-					"name" : "NewFeedPathView",
-					"constructorType" : "View",
-					"params" : {
-						"layout" : {
-							"type" : "directValue",
-							"valueType" : "String",
-							"value" : "horizontal"
-						},
-						"height" : {
-							"type" : "directValue",
-							"valueType" : "Direct",
-							"value" : "Titanium.UI.SIZE"
-						}
-					},
-					"children" : [ {
-						"name" : "NewFeedPathLabel",
-						"constructorType" : "Label",
-						"params" : {
-							"text" : {
-								"type" : "directValue",
-								"valueType" : "String",
-								"value" : "Path: "
-							}
-						},
-						"children" : []
-					}, {
-						"name" : "NewFeedPathTextField",
-						"constructorType" : "TextField",
-						"params" : {
-							"hintText" : {
-								"type" : "directValue",
-								"valueType" : "String",
-								"value" : "Path"
-							}
-						},
-						"children" : [],
-						"newModel" : [ {
-							"modelAttribute" : "path",
-							"objectAttribute" : "value"
-						} ]
-					} ]
-				}, {
-					"name" : "AddButton",
-					"constructorType" : "Button",
-					"params" : {
-						"title" : {
-							"type" : "directValue",
-							"valueType" : "String",
-							"value" : "Add source"
-						}
-					}
-				} ]
-			} ]
-		}, {
-			"name" : "FeedWindow",
-			"constructorType" : "Window",
-			"params" : {
-				"title" : {
-					"type" : "directValue",
-					"valueType" : "String",
-					"value" : "Feed details"
-				},
-				"layout" : {
-					"type" : "directValue",
-					"valueType" : "String",
-					"value" : "vertical"
-				}
-			},
-			"children" : [ {
-				"name" : "FeedLinkLabel",
-				"constructorType" : "Label",
-				"params" : {
-					"text" : {
-						"type" : "directValue",
-						"valueType" : "String",
-						"value" : "Show in browser"
-					}
-				}
-			} ]
-		} ]
+		moduleName : "RSSReader",
+		views : [ componentsCollection.at(0) ]
 	};
 
 	document.forms["makeAppForm"]["appDesc"].value = JSON.stringify(appDesc);
-	//console.log(JSON.stringify(appDesc));
-	//document.forms["makeAppForm"]["appConfig"].value = JSON.stringify(componentsCollection.at(0));
+	// console.log(JSON.stringify(appDesc));
+	// document.forms["makeAppForm"]["appConfig"].value =
+	// JSON.stringify(componentsCollection.at(0));
 	document.forms["makeAppForm"]["appConf"].value = JSON.stringify(appConf);
 	return true;
 };
