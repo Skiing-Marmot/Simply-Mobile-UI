@@ -153,7 +153,7 @@ function getInitialization(type) {
 				font : {
 					type: "directValue",
 					valueType: "Direct",
-					value: {font: "Verdana", fontSize: "1em"}
+					value: '{font: "Verdana", fontSize: "1em"}'
 				}
 			}
 		};
