@@ -1,0 +1,114 @@
+body {
+	width: 100%;
+}
+
+#components {
+	/*float: left;*/
+	margin: 10px auto;
+	border: solid 2px black;
+	padding: 20px;
+	width: 90%;
+}
+
+.components-group {
+	border-top: solid 2px gray;
+	margin-top: 10px;
+	padding: 10px;
+}
+
+.component {
+	border: solid 1px gray;
+	float: left;
+	padding: 5px;
+	width: 85px;
+	height: 85px;
+	margin: 3px;
+	text-align: center;
+	position: relative;
+	z-index: 10;
+}
+
+.clearfix {
+	clear: both;
+}
+
+.component-desc {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+}
+
+.textfield-component {
+	background-color: transparent;
+	border: 2px solid transparent;
+	border-bottom-color: #0099cc;
+	border-radius: 7px;
+	padding:5px 15px;
+	font-family: Roboto, sans-serif;
+	font-size: 16px;
+	width: 25px;
+}
+
+.window-component {
+	height: 55%;
+	width: 30%;
+	margin: auto;
+	border: solid 1px #4bc;
+	border-radius: 5px;
+}
+
+.basicview-component {
+	height: 30%;
+	width: 45%;
+	margin: 0 auto;
+	border: solid 1px #000;
+	background-color: yellow;
+}
+
+#config {
+	float: left;
+	width: 30%;
+}
+
+#phone {
+	height: 965px;
+	width: 422px;
+	background-image: url('images/phone.png');
+	position: relative;
+	margin: auto;
+	border-bottom: solid 2px black;
+	z-index: 1;
+}
+
+#phone-screen {
+	height: 567px;
+	width: 364px;
+	position: absolute;
+	top: 129px;
+	left: 31px;
+	background-color: red;
+	z-index: 1;
+}
+
+[draggable] {
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: move;
+}
+
+.selected {
+	box-shadow: 0px 0px 15px 5px rgba(255, 255, 190, 0.75);
+	border: solid 1px #4bc;
+	border-radius: 5px;
+}
+
+.ui-active {
+	border-radius: 15px;
+	border: dashed 4px #0c0;
+}
+

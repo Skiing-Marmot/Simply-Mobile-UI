@@ -8,9 +8,11 @@ var ejs = require('ejs');
 var app = express();
 app.use(express.logger());
 
-app.get('/', function(request, response) {
+/*app.get('/', function(request, response) {
   response.send('Hello World!');
-});
+});*/
+
+app.use(express.static(__dirname + '/public'));
 
 app.get('/appSrcZip', function(request, response) {
 	
