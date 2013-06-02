@@ -94,6 +94,11 @@ function getInitialization(type) {
 					valueType : "String",
 					value : "white"
 				},
+				color : {
+					type : "directValue",
+					valueType : "String",
+					value : "black"
+				},
 				layout : {
 					type : "directValue",
 					valueType : "String",
@@ -124,6 +129,11 @@ function getInitialization(type) {
 					type : "directValue",
 					valueType : "String",
 					value : "transparent"
+				},
+				color : {
+					type : "directValue",
+					valueType : "String",
+					value : "black"
 				},
 				layout : {
 					type : "directValue",
