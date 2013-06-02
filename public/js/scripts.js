@@ -159,4 +159,5 @@ var makeApp = function() {
 	//var xml = document.getElementById("phone-screen");
 	//var json = $.xml2json(xml);
 	console.log(JSON.stringify(componentsCollection));
+	$.get("/appSrcZip");
 };
