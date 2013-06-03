@@ -284,6 +284,7 @@ var makeApp = function() {
     _.each(views, function(element, index) {
 	element.set("params.title", element.get("params.winTitle"));
 	element.unset("params.winTitle");
+	changeValueType(element);
     });
 
     var appConf = {
@@ -300,5 +301,15 @@ var makeApp = function() {
 };
 
 var changeValueType = function(model) {
-    
+    if(model.get("params.width.value") == "Titanium.UI.FILL" || model.get("params.width.value") == "Titanium.UI.SIZE") {
+	model.set("params.width.valueType", "Direct");
+    }
+    if(model.get("params.height.value") == "Titanium.UI.FILL" || model.get("params.height.value") == "Titanium.UI.SIZE") {
+	model.set("params.height.valueType", "Direct");
+    }
+    if(model.children.length > 0) {
+	_.each(model.children.models, function(element) {
+	    changeValueType(element);
+	});
+    }
 };

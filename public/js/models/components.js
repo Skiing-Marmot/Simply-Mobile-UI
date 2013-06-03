@@ -81,7 +81,7 @@ function getInitialization(type) {
 		width : {
 		    type : "directValue",
 		    valueType : "String",
-		    value : "300px"
+		    value : "Titanium.UI.FILL"
 		},
 		height : {
 		    type : "directValue",
