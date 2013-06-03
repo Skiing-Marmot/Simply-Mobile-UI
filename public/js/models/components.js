@@ -158,7 +158,7 @@ function getInitialization(type) {
 	};
     case ComponentTypes.BUTTON:
 	return {
-	    constructorType : "Label",
+	    constructorType : "Button",
 	    params : {
 		title : {
 		    type : "directValue",
