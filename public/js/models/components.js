@@ -190,7 +190,7 @@ function getInitialization(type) {
 		event : "click",
 		action : {
 		    actionType : "openWindow",
-		    actionValue : "ParamsWindow"
+		    actionValue : "c0"
 		}
 	    } ]
 	};

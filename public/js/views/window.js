@@ -38,6 +38,8 @@ DisplayView = Backbone.View.extend({
 	if (this.model.get("type") == ComponentTypes.TEXTFIELD) {
 	    this.$el.attr("type", "text");
 	    this.$el.attr("readonly", true);
+	} else if (this.model.get("type") == ComponentTypes.WINDOW) {
+	    $("#model").html("Window name: " + this.model.get("_cid"));
 	}
 
 	this.$el.click(selectComponent);

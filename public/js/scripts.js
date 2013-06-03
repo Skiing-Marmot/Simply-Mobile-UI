@@ -232,26 +232,30 @@ var nextScreen = function() {
 };
 
 var prevScreen = function() {
-    screensCollection[screenNumber] = componentsCollection;
-    screenNumber--;
-    componentsCollection = (screensCollection.length > screenNumber) ? screensCollection[screenNumber] : new ComponentsCollection();
+    if(screenNumber > 0) {
+	  screensCollection[screenNumber] = componentsCollection;
+	    screenNumber--;
+	    componentsCollection = (screensCollection.length > screenNumber) ? screensCollection[screenNumber] : new ComponentsCollection();
 
-    // Remove current screen
-    $('#phone-screen').empty();
-    // Remove config screen
-    if (selected != null) {
-	selected.removeClass("selected");
-	configView.close();
-	$('#config').empty();
-	selected = null;
-    }
-    // Add new view
-    if (componentsCollection.length > 0) {
-	var _win = getView(componentsCollection.at(0), "display");
-	var win = $(_win.render().el);
-	// win.click(selectComponent);
-	// makeViewDroppable(_win);
-	win.appendTo($('#phone-screen'));
+	    // Remove current screen
+	    $('#phone-screen').empty();
+	    // Remove config screen
+	    if (selected != null) {
+		selected.removeClass("selected");
+		configView.close();
+		$('#config').empty();
+		selected = null;
+	    }
+	    // Add new view
+	    if (componentsCollection.length > 0) {
+		var _win = getView(componentsCollection.at(0), "display");
+		var win = $(_win.render().el);
+		// win.click(selectComponent);
+		// makeViewDroppable(_win);
+		win.appendTo($('#phone-screen'));
+	    }
+    } else {
+	alert("This is the first screen.");
     }
 };
 
@@ -264,9 +268,11 @@ var makeApp = function() {
     // $.get("/appSrcZip");
     // window.location.href = '/appSrcZip';
     screensCollection[screenNumber] = componentsCollection;
+    
+    var appName = document.forms["makeAppForm"]["appName"].value;
 
     var appDesc = {
-	applicationNameIcon : "My App",
+	applicationNameIcon : appName,
 	applicationName : "MyApp",
 	target : [ "iphone", "android", "ipad" ],
 	manifest : null,
