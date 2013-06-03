@@ -7,7 +7,8 @@ ComponentTypes = {
     VIEW : 1,
     TEXTFIELD : 2,
     LABEL : 3,
-    BUTTON : 4
+    BUTTON : 4,
+    WEBVIEW : 5
 };
 
 ComponentModel = Backbone.DeepModel.extend({
@@ -117,7 +118,7 @@ function getInitialization(type) {
 		height : {
 		    type : "directValue",
 		    valueType : "String",
-		    value : "20px"
+		    value : "50px"
 		}
 	    }
 	};
@@ -178,7 +179,7 @@ function getInitialization(type) {
 		height : {
 		    type : "directValue",
 		    valueType : "String",
-		    value : "20px"
+		    value : "50px"
 		},
 		enabled : {
 		    type : "directValue",
@@ -193,6 +194,27 @@ function getInitialization(type) {
 		    actionValue : "c0"
 		}
 	    } ]
+	};
+    case ComponentTypes.WEBVIEW:
+	return {
+	    constructorType : "WebView",
+	    params : {
+		width : {
+		    type : "directValue",
+		    valueType : "String",
+		    value : "Titanium.UI.FILL"
+		},
+		height : {
+		    type : "directValue",
+		    valueType : "String",
+		    value : "Titanium.UI.FILL"
+		},
+		url : {
+		    type : "directValue",
+		    valueType : "String",
+		    value : "http://www.upv.es"
+		}
+	    }
 	};
     }
 }

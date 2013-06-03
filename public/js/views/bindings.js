@@ -176,24 +176,28 @@ function AttributesConfiguration(view) {
 	    }
 	}
     };
+
+    this.url = {
+	inputType : "textfield",
+	inputPlaceHolder : "Webview URL",
+	bindings : {
+	    selector : view.el,
+	    elAttribute : 'src'
+	}
+    };
 }
 
-function getAttributesToBindForDisplay(view) {
-    var type = view.model.get("type");
-    switch (type) {
-    case ComponentTypes.WINDOW:
-	return [ "_cid", "layout", "backgroundColor" ];
-    case ComponentTypes.VIEW:
-	return [ "_cid", "layout", "backgroundColor", "width", "height" ];
-    case ComponentTypes.TEXTFIELD:
-	return [ "_cid", "backgroundColor", "width", "height", "hintText", "color", "font.font", "font.fontSize" ];
-    case ComponentTypes.LABEL:
-	return [ "_cid", "backgroundColor", "width", "height", "text", "color", "font.font", "font.fontSize" ];
-    default:
-	console.log("No data for that model type.");
-	break;
-    }
-}
+/*
+ * function getAttributesToBindForDisplay(view) { var type =
+ * view.model.get("type"); switch (type) { case ComponentTypes.WINDOW: return [
+ * "_cid", "layout", "backgroundColor" ]; case ComponentTypes.VIEW: return [
+ * "_cid", "layout", "backgroundColor", "width", "height" ]; case
+ * ComponentTypes.TEXTFIELD: return [ "_cid", "backgroundColor", "width",
+ * "height", "hintText", "color", "font.font", "font.fontSize" ]; case
+ * ComponentTypes.LABEL: return [ "_cid", "backgroundColor", "width", "height",
+ * "text", "color", "font.font", "font.fontSize" ]; default: console.log("No
+ * data for that model type."); break; } }
+ */
 
 function getBindingForDisplay(view) {
     // var attributesToBind = getAttributesToBindForDisplay(view);
@@ -223,6 +227,8 @@ function getAttributesToBindForConfig(view) {
 	return [ "backgroundColor", "width", "height", "text", "color" ];
     case ComponentTypes.BUTTON:
 	return [ "width", "height", "title", "color", "enabled" ];
+    case ComponentTypes.WEBVIEW:
+	return [ "url", "width", "height" ];
     default:
 	console.log("No data for that model type.");
 	break;

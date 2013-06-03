@@ -7,8 +7,10 @@
 <meta name="description" content="" />
 <meta name="author" content="Clémence" />
 
-<link rel="stylesheet" media="screen" type="text/css" title="Design" href="css/reset.css" />
-<link rel="stylesheet" media="screen" type="text/css" title="Design" href="css/styles.css" />
+<link rel="stylesheet" media="screen" type="text/css" title="Design"
+	href="css/reset.css" />
+<link rel="stylesheet" media="screen" type="text/css" title="Design"
+	href="css/styles.css" />
 
 <script type="text/javascript" src="js/jquery-1.8.2.js"></script>
 <script type="text/javascript" src="js/underscore.js"></script>
@@ -26,17 +28,6 @@
 
 <body>
 	<div>
-		<header>
-			<h1>index</h1>
-		</header>
-		<nav>
-			<p>
-				<a href="/">Home</a>
-			</p>
-			<p>
-				<a href="/contact">Contact</a>
-			</p>
-		</nav>
 
 		<div>
 			<div id="components">
@@ -65,13 +56,20 @@
 						<p class="component-desc">Textfield</p>
 					</div>
 					<div class="component comp">
-						<p class="button-component inline-component" compType="4"><button>Button</button></p>
+						<p class="button-component inline-component" compType="4">
+							<button>Button</button>
+						</p>
 						<p class="component-desc">Button</p>
+					</div>
+					<div class="component">
+						<div class="webview-component inline-component" compType="5">WebView</div>
+						<p class="component-desc container-comp">WebView</p>
 					</div>
 					<div class="clearfix"></div>
 				</div>
 			</div>
 
+			<div id="windowName"></div>
 			<div id="config">
 				<div id="model"></div>
 			</div>
@@ -81,17 +79,24 @@
 			</div>
 		</div>
 
-		<div><button onclick="prevScreen();">Previous Screen</button><button onclick="nextScreen();">Next Screen</button></div>
-		<form action="appSrcZip.zip"
-			id="makeAppForm" method="post" onsubmit="return makeApp();">
-			<input type="hidden" name="appDesc" />
-			<input type="hidden" name="appConf" />
-			<label for="appName" >Application name: </label> <input type="text" name="appName" id="appName" /> <input type="submit" value="Make App!" />
+		<div>
+			<button onclick="prevScreen();">Previous Screen</button>
+			<button onclick="nextScreen();">Next Screen</button>
+		</div>
+		<form action="appSrcZip.zip" id="makeAppForm" method="post"
+			onsubmit="return makeApp();">
+			<input type="hidden" name="appDesc" /> <input type="hidden"
+				name="appConf" /> <label for="appName">Application name: </label>
+			<input type="text" name="appName" id="appName" /> <input
+				type="submit" value="Make App!" />
 		</form>
 
 		<footer>
-			<p>&copy; Copyright by Clémence</p>
+			<p>
+				UPV->TCP project - Demonstration video on <a href="">Youtube</a> -
+				Source code on <a
+					href="https://github.com/Skiing-Marmot/Simply-Mobile-UI">GitHub</a>
+			</p>
 		</footer>
-	</div>
 </body>
 </html>
