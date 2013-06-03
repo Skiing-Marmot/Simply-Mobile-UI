@@ -260,9 +260,10 @@ var prevScreen = function() {
 var makeApp = function() {
     // var xml = document.getElementById("phone-screen");
     // var json = $.xml2json(xml);
-    console.log(JSON.stringify(componentsCollection.at(0)));
+    //console.log(JSON.stringify(componentsCollection.at(0)));
     // $.get("/appSrcZip");
     // window.location.href = '/appSrcZip';
+    screensCollection[screenNumber] = componentsCollection;
 
     var appDesc = {
 	applicationNameIcon : "My App",
@@ -273,10 +274,21 @@ var makeApp = function() {
 	allowHorizontal : true,
 	baseFile : "ModuleTest"
     };
+    
+    var views = [];
+    _.each(screensCollection, function(element, index) {
+	views[index] = element.at(0);
+    });
+    
+    // Remplace the winTitle param of the windows by a title param
+    _.each(views, function(element, index) {
+	element.set("params.title", element.get("params.winTitle"));
+	element.unset("params.winTitle");
+    });
 
     var appConf = {
 	moduleName : "ModuleTest",
-	views : [ componentsCollection.at(0) ]
+	views : views
     };
 
     document.forms["makeAppForm"]["appDesc"].value = JSON.stringify(appDesc);
@@ -285,4 +297,8 @@ var makeApp = function() {
     // JSON.stringify(componentsCollection.at(0));
     document.forms["makeAppForm"]["appConf"].value = JSON.stringify(appConf);
     return true;
+};
+
+var changeValueType = function(model) {
+    
 };

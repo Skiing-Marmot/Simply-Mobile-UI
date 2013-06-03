@@ -32,7 +32,7 @@ function getInitialization(type) {
 	return {
 	    constructorType : "Window",
 	    params : {
-		title : {
+		winTitle : {
 		    type : "directValue",
 		    valueType : "String",
 		    value : "New Window"
@@ -81,12 +81,12 @@ function getInitialization(type) {
 		width : {
 		    type : "directValue",
 		    valueType : "String",
-		    value : "100%"
+		    value : "300px"
 		},
 		height : {
 		    type : "directValue",
 		    valueType : "String",
-		    value : "50px"
+		    value : "100px"
 		}
 	    }
 	};
@@ -112,12 +112,12 @@ function getInitialization(type) {
 		width : {
 		    type : "directValue",
 		    valueType : "String",
-		    value : "auto"
+		    value : "100px"
 		},
 		height : {
 		    type : "directValue",
 		    valueType : "String",
-		    value : "auto"
+		    value : "20px"
 		}
 	    }
 	};
@@ -143,12 +143,12 @@ function getInitialization(type) {
 		width : {
 		    type : "directValue",
 		    valueType : "String",
-		    value : "auto"
+		    value : "100px"
 		},
 		height : {
 		    type : "directValue",
 		    valueType : "String",
-		    value : "auto"
+		    value : "20px"
 		}
 	    /*
 	     * , font : { type: "directValue", valueType: "Direct", value:
@@ -173,12 +173,12 @@ function getInitialization(type) {
 		width : {
 		    type : "directValue",
 		    valueType : "String",
-		    value : "auto"
+		    value : "100px"
 		},
 		height : {
 		    type : "directValue",
 		    valueType : "String",
-		    value : "auto"
+		    value : "20px"
 		},
 		enabled : {
 		    type : "directValue",

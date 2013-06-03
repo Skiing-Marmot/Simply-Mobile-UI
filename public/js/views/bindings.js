@@ -13,10 +13,18 @@ function AttributesConfiguration(view) {
 
     this.title = {
 	inputType : "textfield",
+	inputPlaceHolder : "Button title",
+	bindings : {
+	    selector : view.el
+	}
+    };
+
+    this.winTitle = {
+	inputType : "textfield",
 	inputPlaceHolder : "Window title",
 	bindings : {
 	    selector : view.el,
-	    //elAttribute : 'title'
+	    elAttribute : 'title'
 	}
     };
 
@@ -57,6 +65,11 @@ function AttributesConfiguration(view) {
 	bindings : {
 	    selector : view.el,
 	    converter : function(direction, value) {
+		if (value == "Titanium.UI.SIZE") {
+		    value = 'auto';
+		} else if (value == "Titanium.UI.FILL") {
+		    value = '100%';
+		}
 		$(view.el).css("height", value);
 	    }
 	}
@@ -68,6 +81,11 @@ function AttributesConfiguration(view) {
 	bindings : {
 	    selector : view.el,
 	    converter : function(direction, value) {
+		if (value == "Titanium.UI.SIZE") {
+		    value = 'auto';
+		} else if (value == "Titanium.UI.FILL") {
+		    value = '100%';
+		}
 		$(view.el).css("width", value);
 	    }
 	}
@@ -154,7 +172,7 @@ function AttributesConfiguration(view) {
 	bindings : {
 	    selector : view.el,
 	    converter : function(direction, value) {
-		//$(view.el).attr("disabled", !value);
+		// $(view.el).attr("disabled", !value);
 	    }
 	}
     };
@@ -196,15 +214,15 @@ function getAttributesToBindForConfig(view) {
     var type = view.model.get("type");
     switch (type) {
     case ComponentTypes.WINDOW:
-	return [ "layout", "title", "backgroundColor" ];
+	return [ "layout", "backgroundColor", "winTitle" ];
     case ComponentTypes.VIEW:
 	return [ "layout", "backgroundColor", "width", "height" ];
     case ComponentTypes.TEXTFIELD:
-	return [ "backgroundColor", "width", "height", "hintText", "color"];
+	return [ "backgroundColor", "width", "height", "hintText", "color" ];
     case ComponentTypes.LABEL:
-	return [ "backgroundColor", "width", "height", "text", "color"];
+	return [ "backgroundColor", "width", "height", "text", "color" ];
     case ComponentTypes.BUTTON:
-	return [ "width", "height", "title", "color", "enabled"];
+	return [ "width", "height", "title", "color", "enabled" ];
     default:
 	console.log("No data for that model type.");
 	break;
@@ -218,6 +236,9 @@ function getBindingsForConfig(view) {
     _.each(attributesToBind, function(element, index, list) {
 	bindings["params." + element + ".value"] = '[name="' + element + '"]';
     });
+    _.each(view.model.get("eventListener"), function(element, index, list) {
+	bindings["eventListener." + index + ".action.actionValue"] = '[name="event.' + index + '"]';
+    });
 
     return bindings;
 }
@@ -230,29 +251,39 @@ function getHtmlForConfig(view) {
     _.each(attributesToBind, function(element, index, list) {
 	html += getHtmlForElement(ac[element], element);
     });
+    _.each(view.model.get("eventListener"), function(element, index, list) {
+	html += getHtmlForEvent(index);
+    });
 
     html += '</div>';
     return html;
 }
 
+function getHtmlForEvent(index) {
+    return '<label for="event.' + index + '">Windows to open on click: </label><input type="text" name="event.' + index + '" id="event.'
+	    + index + '" placeholder="Window name" />';
+}
+
 function getHtmlForElement(element, elementName) {
     var inputType = element.inputType;
+    var html = '<label for="' + elementName + '">' + elementName + ': </label> ';
 
     switch (inputType) {
     case "textfield":
-	return '<input type="text" name="' + elementName + '" placeholder="' + element.inputPlaceHolder + '" />';
+	return html + '<input type="text" name="' + elementName + '" id="' + elementName + '" placeholder="' + element.inputPlaceHolder
+		+ '" /><br />';
     case "select":
 	var options = element.inputOptions;
-	var html = '<select name="' + elementName + '">';
+	html += '<select name="' + elementName + '" id="' + elementName + '" >';
 
 	_.each(options, function(option, index, list) {
 	    html += '<option value="' + option.value + '">' + option.text + '</option>';
 	});
 
-	html += '</select>';
+	html += '</select><br />';
 	return html;
     case "checkbox":
-	return '<label for="' + elementName + '">' + elementName + ': </label> <input type="checkbox" name="' + elementName + '" id="' + elementName + '" />';
+	return html + '<input type="checkbox" name="' + elementName + '" id="' + elementName + '" /><br />';
     }
 }
 
