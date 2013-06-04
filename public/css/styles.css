@@ -127,3 +127,7 @@ footer {
 	border-top: dashed 1px black;
 }
 
+#windowName {
+	font-weight: bold;
+}
+
